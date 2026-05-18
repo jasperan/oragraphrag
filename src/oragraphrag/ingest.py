@@ -18,6 +18,13 @@ from pypdf import PdfReader
 # Rough estimator: characters per token. Used only for buffer sizing; the LLM
 # never sees this number, so over/under-estimating by ~25% is fine. Real token
 # counting via tiktoken would add a dep cost we don't need yet.
+#
+# Caveats (not a bug, just an FYI for tuners):
+# - Source code tokenizes at ~3 chars/token, so code-heavy buffers under-estimate.
+# - PDF extraction with mangled whitespace can over-pack characters.
+# - Asian-language docs run ~1-2 chars/token.
+# Buffers may therefore be up to ~2x the configured max_tokens for code/PDF
+# content. Still safely under any modern LLM context window.
 _TOKEN_APPROX = 4
 
 
@@ -54,6 +61,8 @@ class Buffer:
 
     @property
     def approx_tokens(self) -> int:
+        if not self.text:
+            return 0
         return max(1, len(self.text) // _TOKEN_APPROX)
 
 
@@ -110,7 +119,10 @@ def _parse_markdown(path: Path, rel: str) -> Iterator[Span]:
             section_stack[level - 1 :] = [inline.content]
             i += 3
             continue
-        if tok.type == "inline":
+        if tok.type in ("inline", "fence", "code_block"):
+            # `fence` is a triple-backtick block; `code_block` is the indented form.
+            # Both carry their body in `tok.content` — capture so SQL/PL/SQL samples
+            # in Oracle docs aren't silently dropped.
             buf.append(tok.content)
         i += 1
 
@@ -180,17 +192,21 @@ def buffer_spans(
             b = make_buffer()
             if b is not None:
                 yield b
-            # Compute overlap from the trailing text of the just-flushed buffer.
             if overlap_tokens > 0:
                 tail_chars = overlap_tokens * _TOKEN_APPROX
                 joined = "\n\n".join(cur_text)
                 tail = joined[-tail_chars:] if len(joined) > tail_chars else joined
                 cur_text = [tail]
                 cur_tokens = max(1, len(tail) // _TOKEN_APPROX)
+                # Keep the trailing span's hash so the next buffer's span_hashes
+                # acknowledges the overlap content. Without this, Task 8's ledger
+                # logic would misjudge "all spans already ledgered" because the
+                # carried-over span's hash would be dropped from the buffer.
+                cur_hashes = cur_hashes[-1:]
             else:
                 cur_text = []
                 cur_tokens = 0
-            cur_hashes = []
+                cur_hashes = []
 
         cur_text.append(span.text)
         cur_hashes.append(span.hash)
