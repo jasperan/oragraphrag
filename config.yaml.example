@@ -9,6 +9,8 @@ llm:
     base_url: http://localhost:11434
     model: qwen3.5:35b-a3b
   fallback_on_outage: false
+  request_timeout_s: 60.0
+  max_retries: 5
 
 embeddings:
   provider: oracle
@@ -20,6 +22,8 @@ oracle:
   username: ORAGRAPH
   password: Welcome12345*
   dsn: localhost:1521/FREEPDB1
+  pool_min: 1
+  pool_max: 8
 
 retrieval:
   seed_k_entities: 8
@@ -29,6 +33,7 @@ retrieval:
   amplitude:
     alpha: 8.0
     beta: 0.0
+    per_axis_overrides: {}
   pagerank:
     damping: 0.85
     top_m_entities: 20
