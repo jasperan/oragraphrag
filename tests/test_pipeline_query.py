@@ -238,3 +238,38 @@ async def test_query_seeds_propositions_pass_through_seed_sims():
     # fetch_propositions was called with some ids (the assembled ones).
     fp_calls = [c for c in g.calls if c[0] == "fp"]
     assert len(fp_calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_query_edges_nonempty_but_picked_empty_yields_no_info():
+    """Subgraph has an edge between non-seed nodes; PPR mass doesn't reach
+    them, so picked is empty. Answer must short-circuit to _NO_INFO without
+    calling fetch_propositions; edges_used should still expose the graph
+    evidence for the visualizer."""
+    cfg = Config()
+    cfg.embeddings.dim = 5
+    g = _StubGraph()
+    # Edge between two NON-seed nodes (seed is b"\x01" from the stub).
+    g.subgraph_result = [
+        {
+            "src": b"\x99",
+            "dst": b"\x88",
+            "predicate": "p",
+            "ontology_axis": "causal",
+            "base_weight": 0.8,
+            "support_propositions": [b"\xcc".hex()],
+        }
+    ]
+    g.props_result = []
+    p = QueryPipeline(
+        cfg=cfg,
+        graph=g,
+        embedder=_StubEmbedder(),
+        llm=_StubLLM(),
+        axis_vectors=_axis_vectors(),
+    )
+    out = await p.query("q")
+    assert "don't have information" in out.answer.text.lower()
+    assert len(out.edges_used) == 1
+    # No fetch_propositions call when picked is empty.
+    assert not any(c[0] == "fp" for c in g.calls)

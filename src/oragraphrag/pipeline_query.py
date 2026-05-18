@@ -28,7 +28,7 @@ from oragraphrag.retrieve import (
 class QueryResult:
     answer: AnswerResult
     amplitudes: dict[str, float]
-    edges_used: list[dict]
+    edges_used: list[dict[str, Any]]
     latency_ms: dict[str, float]
 
 
@@ -57,12 +57,13 @@ class QueryPipeline:
         t["embed_ms"] = (time.perf_counter() - t0) * 1000
 
         t0 = time.perf_counter()
+        q_list = q_emb.tolist()
         ent_seeds = self.graph.vector_search_entities(
-            query_vec=q_emb.tolist(),
+            query_vec=q_list,
             k=self.cfg.retrieval.seed_k_entities,
         )
         prop_seeds = self.graph.vector_search_propositions(
-            query_vec=q_emb.tolist(),
+            query_vec=q_list,
             k=self.cfg.retrieval.seed_k_propositions,
         )
         t["seed_ms"] = (time.perf_counter() - t0) * 1000
