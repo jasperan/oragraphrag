@@ -126,3 +126,13 @@ def test_pgql_one_hop_does_not_return_far_neighbor(store):
     assert (a, b) in src_dst
     # (b, c) is two hops from seed `a` — must NOT appear in the result.
     assert (b, c) not in src_dst
+
+
+def test_ledger_add_and_check(store):
+    store.init_db(rebuild=True, axis_vectors=_zero_axis_vectors())
+    assert not store.ledger_has("abc123")
+    store.ledger_add("abc123", doc_id="d.md", section_path="s")
+    assert store.ledger_has("abc123")
+    # Idempotent: second add does not raise.
+    store.ledger_add("abc123", doc_id="d.md", section_path="s")
+    assert store.ledger_has("abc123")

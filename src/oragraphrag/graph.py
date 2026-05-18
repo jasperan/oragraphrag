@@ -445,6 +445,35 @@ class GraphStore:
             for r in rows
         ]
 
+    # ---------- IngestLedger ops ----------
+
+    def ledger_has(self, span_hash: str) -> bool:
+        """Returns True if the span hash is already in the IngestLedger."""
+        with self._conn() as c, c.cursor() as cur:
+            cur.execute(
+                "SELECT 1 FROM Ingest_Ledger WHERE span_hash = :h",
+                h=span_hash,
+            )
+            return cur.fetchone() is not None
+
+    def ledger_add(self, span_hash: str, *, doc_id: str, section_path: str) -> None:
+        """Record a span hash as ingested. Idempotent on conflict."""
+        with self._conn() as c, c.cursor() as cur:
+            try:
+                cur.execute(
+                    "INSERT INTO Ingest_Ledger (span_hash, doc_id, section_path) "
+                    "VALUES (:h, :d, :s)",
+                    h=span_hash,
+                    d=doc_id,
+                    s=section_path,
+                )
+                c.commit()
+            except oracledb.IntegrityError:
+                c.rollback()  # row already exists; idempotent skip
+            except Exception:
+                c.rollback()
+                raise
+
     def fetch_propositions(self, ids: Iterable[bytes]) -> list[dict]:
         ids = list(ids)
         if not ids:
