@@ -38,3 +38,8 @@ AXIS_DESCRIPTIONS: dict[str, str] = {
         "An instance of X is Y. X shows Y in practice."
     ),
 }
+# TODO(task-13): Once a real embedding backend lands, add an integration test
+# that asserts pairwise cosine between the 5 axis vectors is below ~0.85.
+# If two axes cluster (e.g., "definitional" and "taxonomic" can land close on
+# some models), expand the description with diverse vocabulary and structural
+# variety (definitions + concrete examples + contrast).

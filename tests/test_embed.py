@@ -87,3 +87,24 @@ def test_embedder_rejects_dim_mismatch():
     backend = _StubEmbedder(dim=768)  # wrong dim
     with pytest.raises(ValueError, match="dim"):
         Embedder(cfg, backend=backend)
+
+
+def test_embedder_l2_normalize_raises_on_zero_norm():
+    bad = np.array([[1.0, 1.0], [0.0, 0.0]], dtype=np.float32)
+    with pytest.raises(ValueError, match="zero-norm"):
+        Embedder._l2_normalize(bad)
+
+
+@pytest.mark.asyncio
+async def test_build_axis_vectors_validates_shape():
+    """A backend that returns the wrong row count must raise loudly."""
+
+    class _BrokenBackend:
+        dim = 384
+
+        async def embed(self, texts):
+            # Returns 3 rows instead of 5.
+            return np.zeros((3, 384), dtype=np.float32)
+
+    with pytest.raises(ValueError, match="expected"):
+        await build_axis_vectors(_BrokenBackend())

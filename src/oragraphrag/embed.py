@@ -44,8 +44,22 @@ class Embedder:
 
     @staticmethod
     def _l2_normalize(a: np.ndarray) -> np.ndarray:
+        """L2-normalize each row. Raises if any row has zero norm.
+
+        Zero-norm rows are not a legitimate output of an embedding model on
+        non-empty text — they indicate an upstream bug (e.g., empty string
+        leaked past the buffer-tokenizer, or backend returned a sentinel).
+        Surfacing the failure at the normalize boundary keeps Task 8's
+        8-way concurrent ingest from silently producing nonsense activations
+        in Task 9.
+        """
         n = np.linalg.norm(a, axis=1, keepdims=True)
-        n = np.where(n == 0, 1.0, n)
+        if np.any(n == 0):
+            zero_rows = np.where(n.ravel() == 0)[0].tolist()
+            raise ValueError(
+                f"L2 normalize received {len(zero_rows)} zero-norm row(s) "
+                f"at indices {zero_rows[:5]}; check the embedding backend output"
+            )
         return a / n
 
 
@@ -53,15 +67,19 @@ async def build_axis_vectors(embedder: _EmbedBackend | Embedder) -> dict[str, np
     """Embed the canonical description of each ontology axis once.
 
     Returns a dict {axis_name: np.ndarray(dim,)} suitable for storage in the
-    Oracle `Ontology_Axis` table at `init-db` time. The vectors are NOT
-    L2-normalized here; Task 9 normalizes on the fly when computing the
-    cosine projection of the query onto each axis. (This keeps the table
-    storage closer to whatever the underlying model produces.)
+    Oracle `Ontology_Axis` table at `init-db` time. Task 9 renormalizes both
+    the query vector and each axis vector when computing the cosine projection,
+    so the storage form (raw vs L2-normalized) does not affect downstream math.
 
-    Accepts either a raw backend (for tests) or a full Embedder. Both must
-    expose an async `embed(texts: list[str]) -> np.ndarray` method.
+    Accepts either a raw backend or a full Embedder. Both must expose an
+    async `embed(texts: list[str]) -> np.ndarray` method.
     """
     names = list(ONTOLOGY_AXIS_NAMES)
     descs = [AXIS_DESCRIPTIONS[n] for n in names]
     mat = await embedder.embed(descs)
+    expected_shape = (len(names), embedder.dim)
+    if mat.shape != expected_shape:
+        raise ValueError(
+            f"build_axis_vectors: backend returned shape {mat.shape}, expected {expected_shape}"
+        )
     return {name: mat[i] for i, name in enumerate(names)}
