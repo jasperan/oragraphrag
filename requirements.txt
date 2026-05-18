@@ -1,3 +1,10 @@
+# Reproducible runtime pin set for Docker builds and CI.
+# This file is a frozen lockfile; pyproject.toml is the source of truth for
+# version floors. If you change a dep, update pyproject.toml first, then
+# regenerate this file via:
+#   pip-compile --output-file=requirements.txt pyproject.toml
+# (or manually keep both in sync until pip-compile is wired into CI).
+
 typer==0.12.3
 rich==13.7.1
 pydantic==2.7.4
@@ -12,6 +19,6 @@ pyyaml==6.0.1
 tiktoken==0.7.0
 pypdf==4.2.0
 markdown-it-py==3.0.0
-tree-sitter==0.22.3
-tree-sitter-languages==1.10.2
+tree-sitter==0.24.0
+tree-sitter-language-pack==0.5.0
 tenacity==8.3.0

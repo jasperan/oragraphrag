@@ -11,10 +11,34 @@ logs/
 .env
 .coverage
 htmlcov/
-*.ipynb_checkpoints/
+.ipynb_checkpoints/
 paper/*.aux
 paper/*.log
 paper/*.out
 paper/*.bbl
 paper/*.blg
 docs/plans/
+
+# Data and local DBs
+data/
+*.sqlite
+*.db
+*.duckdb
+
+# Editor / OS
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
+
+# Oracle wallets and connection material (NEVER commit these)
+wallet/
+*.wallet
+*.sso
+*.p12
+*.pem
+tnsnames.ora
+sqlnet.ora
+cwallet.sso

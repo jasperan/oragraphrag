@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Oracle-backed graph-augmented RAG with query-conditioned dynamic edge reweighting"
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "jasperan" }]
 dependencies = [
   "typer>=0.12",
@@ -25,14 +25,19 @@ dependencies = [
   "tiktoken>=0.7",
   "pypdf>=4.2",
   "markdown-it-py>=3.0",
-  "tree-sitter>=0.22",
-  "tree-sitter-languages>=1.10",
+  "tree-sitter>=0.23,<0.25",
+  "tree-sitter-language-pack>=0.5",
   "tenacity>=8.3",
 ]
 
 [project.optional-dependencies]
-notebook = ["jupyter", "pyvis", "matplotlib"]
+notebook = ["jupyterlab>=4.0", "pyvis>=0.3", "matplotlib>=3.8"]
 sentence-transformers = ["sentence-transformers>=3.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[dependency-groups]
 dev = [
   "pytest>=8.2",
   "pytest-asyncio>=0.23",
@@ -42,19 +47,23 @@ dev = [
   "mypy>=1.10",
 ]
 
-[project.scripts]
-oragraphrag = "oragraphrag.cli:app"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
 [tool.pytest.ini_options]
 markers = [
   "oracle: requires a running Oracle 23ai Free instance",
   "llm: requires a configured LLM endpoint (OCI or Ollama)",
 ]
 asyncio_mode = "auto"
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
