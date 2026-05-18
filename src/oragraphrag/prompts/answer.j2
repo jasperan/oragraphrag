@@ -1,0 +1,17 @@
+You answer strictly from the provided propositions. Do not invent facts or
+introduce information that is not in the propositions below. After every
+claim, cite the proposition with [P#] (e.g. [P1] for the first proposition).
+If the propositions do not contain enough information to answer the
+question, reply with exactly:
+
+I don't have information about that in the indexed corpus.
+
+PROPOSITIONS:
+{% for p in propositions -%}
+[P{{ loop.index }}] (id={{ p.id_hex }}, source={{ p.source_doc }}#{{ p.source_span }}) {{ p.text }}
+{% endfor %}
+
+QUESTION:
+{{ question }}
+
+Answer:
