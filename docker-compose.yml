@@ -1,0 +1,51 @@
+services:
+  oracle-free:
+    image: container-registry.oracle.com/database/free:latest-lite
+    container_name: oragraphrag-oracle
+    ports:
+      - "${ORACLE_PORT:-1521}:1521"
+    environment:
+      - ORACLE_PWD=${ORACLE_PASSWORD:-Welcome12345*}
+      - ORACLE_CHARACTERSET=AL32UTF8
+    volumes:
+      - oragraphrag-oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "/opt/oracle/checkDBStatus.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: oragraphrag-ollama
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - oragraphrag-ollama-data:/root/.ollama
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: oragraphrag-app
+    environment:
+      - ORACLE_USERNAME=${ORACLE_USERNAME:-ORAGRAPH}
+      - ORACLE_PASSWORD=${ORACLE_PASSWORD:-Welcome12345*}
+      - ORACLE_DSN=${ORACLE_DSN:-oracle-free:1521/FREEPDB1}
+      - OGR__LLM__OLLAMA__BASE_URL=http://ollama:11434
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./logs:/app/logs
+    depends_on:
+      oracle-free:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+
+volumes:
+  oragraphrag-oracle-data:
+  oragraphrag-ollama-data:
