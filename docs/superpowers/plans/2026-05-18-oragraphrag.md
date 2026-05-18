@@ -4062,3 +4062,57 @@ No issues.
 **4. (Implicit) self-check of LLM-as-judge sync/async boundary.** `score_correctness` uses `asyncio.get_event_loop().run_until_complete(...)` — that pattern fails inside an already-running loop. The actual hot path in `run_suite` calls `_judge_call` directly (awaited), so this is fine; `score_correctness` is only used by tests via a monkeypatched judge. Acceptable as written.
 
 Plan complete and saved to `docs/superpowers/plans/2026-05-18-oragraphrag.md`.
+
+---
+
+## Operator setup notes from Task 5 implementation (carry forward to Task 18)
+
+The bare Oracle 23ai Free `:latest-lite` container does NOT come up ready for VECTOR + HNSW out of the box. Both fixes below MUST land in `install.sh` (Task 18) or as init scripts mounted into `/opt/oracle/scripts/setup` in `docker-compose.yml`, otherwise a fresh `docker compose up -d oracle-free && oragraphrag init-db` will fail.
+
+### Required fix 1: enable VECTOR memory pool
+
+The container's default `vector_memory_size` is 0, which causes:
+```
+ORA-51962: The vector memory area is out of space for the current container
+```
+on `CREATE VECTOR INDEX`.
+
+Fix (as SYSDBA in the container, requires DB restart):
+```sql
+ALTER SYSTEM SET vector_memory_size=512M SCOPE=SPFILE;
+SHUTDOWN IMMEDIATE;
+STARTUP;
+```
+
+### Required fix 2: ORAGRAPH user needs auto-SSM tablespace
+
+The default tablespace in FREEPDB1 is SYSTEM (manual segment space management), which causes:
+```
+ORA-43853: VECTOR type cannot be used in non-automatic segment space management tablespace "SYSTEM"
+```
+on `CREATE TABLE Entity (... embedding VECTOR ...)`.
+
+Fix (as SYSTEM in FREEPDB1):
+```sql
+CREATE TABLESPACE USERS
+    DATAFILE 'users01.dbf' SIZE 200M AUTOEXTEND ON NEXT 50M MAXSIZE 2G
+    EXTENT MANAGEMENT LOCAL
+    SEGMENT SPACE MANAGEMENT AUTO;
+ALTER USER ORAGRAPH DEFAULT TABLESPACE USERS;
+ALTER USER ORAGRAPH QUOTA UNLIMITED ON USERS;
+```
+
+### User creation (apply once per container)
+
+```sql
+CREATE USER ORAGRAPH IDENTIFIED BY "Welcome12345*";
+GRANT CONNECT, RESOURCE TO ORAGRAPH;
+GRANT UNLIMITED TABLESPACE TO ORAGRAPH;
+GRANT CREATE PROPERTY GRAPH TO ORAGRAPH;
+```
+
+The `GRANT CREATE PROPERTY GRAPH` accepted without error but may be redundant with RESOURCE role on `:latest-lite`. Keep it explicit; it is harmless.
+
+### Test-marker contract
+
+The Task 5 integration tests (`tests/test_graph.py`) are marked `@pytest.mark.oracle` and skipped under the default `pytest -m "not oracle and not llm"`. To run them, run `pytest tests/test_graph.py -m oracle` after the setup above is applied.
