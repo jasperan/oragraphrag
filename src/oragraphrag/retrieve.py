@@ -63,6 +63,11 @@ def reweight_edges(edges: list[dict], amplitudes: dict[str, float]) -> list[dict
     for e in edges:
         amp = amplitudes.get(e["ontology_axis"], 0.5)
         new = dict(e)
+        # Defensive deep-ish copy: shallow-copy the only mutable field we know
+        # downstream code touches. cheaper than copy.deepcopy and matches actual
+        # data flow.
+        if "support_propositions" in e:
+            new["support_propositions"] = list(e["support_propositions"])
         new["weight"] = float(e["base_weight"]) * amp
         out.append(new)
     return out
@@ -85,9 +90,10 @@ def spreading_activation(
     the seed list or any edge. Disconnected nodes will still receive a
     small share of reset mass if they are seeds.
 
-    Empty edges + seeds: returns {seed_ids[0]: 1.0} as a degenerate
-    fallback, so downstream assemble_propositions has at least one
-    activation to work with. Empty seeds with no edges: returns {}.
+    Empty edges + seeds: returns {s: 1/len(seeds) for s in seeds} as a
+    degenerate fallback, so each seed contributes equally and downstream
+    assemble_propositions has activations to work with. Empty seeds with
+    no edges: returns {}.
     """
     node_ids: list[bytes] = []
     idx: dict[bytes, int] = {}
@@ -145,11 +151,18 @@ def assemble_propositions(
     Each edge in `edges` carries a `support_propositions` list (hex strings
     from Oracle's JSON column, or raw bytes if the caller pre-decoded).
     A proposition's score is the MAX activation of either endpoint of any
-    supporting edge, plus a seed-similarity bonus.
+    supporting edge, multiplied by (0.5 + seed_sim).
 
     Returns the top-M proposition IDs as bytes, sorted by score descending.
     Empty edges → []. Propositions appearing in multiple edges are deduped:
-    each prop's final score is the MAX over its edges.
+    each prop's final score is the MAX across its supporting edges.
+
+    Contract: graph evidence is REQUIRED. A proposition whose supporting
+    edges all have zero activation is excluded from the result, even when
+    seed_sim is high. This enforces spec §6 Step 5's intent — the
+    assembled propositions are surfaced by the reweighted graph walk, not
+    by pure vector matches. Pure-vector-only retrieval is handled by the
+    seed retrieval at Task 11's Step 1, BEFORE the graph walk runs.
     """
     prop_score: dict[bytes, float] = {}
     for e in edges:

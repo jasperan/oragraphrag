@@ -221,3 +221,39 @@ def test_assemble_accepts_bytes_or_hex_string_support_propositions():
 
 def test_assemble_empty_edges_returns_empty_list():
     assert assemble_propositions([], {}, {}, top_m=5) == []
+
+
+def test_reweight_does_not_alias_support_propositions_list():
+    """Mutating the output's support_propositions must not affect the input."""
+    edges = [
+        {
+            "src": b"a",
+            "dst": b"b",
+            "ontology_axis": "causal",
+            "base_weight": 0.5,
+            "support_propositions": ["aa", "bb"],
+        }
+    ]
+    amps = {"causal": 0.9, "taxonomic": 0.5, "temporal": 0.5,
+            "definitional": 0.5, "exemplification": 0.5}
+    out = reweight_edges(edges, amps)
+    out[0]["support_propositions"].append("MUTATED")
+    assert edges[0]["support_propositions"] == ["aa", "bb"]
+
+
+def test_assemble_drops_propositions_with_zero_graph_activation():
+    """Documented contract: graph evidence is required. A proposition whose
+    supporting edges all have zero activation is excluded even when seed_sim
+    is high. Pure-vector retrieval lives upstream in Task 11's seed search."""
+    edges = [
+        {
+            "src": b"a",
+            "dst": b"b",
+            "weight": 0.9,
+            "support_propositions": [b"p_orphan".hex()],
+        }
+    ]
+    activations = {b"a": 0.0, b"b": 0.0}  # graph didn't activate
+    seed_sims = {b"p_orphan": 0.99}  # but vector seed matched strongly
+    picked = assemble_propositions(edges, activations, seed_sims, top_m=5)
+    assert picked == []
