@@ -61,6 +61,26 @@ class Answerer:
         )
         self._tmpl = Template(text)
 
+    def _truncate_to_budget(self, question: str, propositions: list[dict]) -> list[dict]:
+        """Drop trailing propositions until the rendered prompt fits the budget.
+
+        Uses a char/4 token estimate consistent with Task 6's ingest buffer
+        sizing. Returns the (possibly shortened) propositions list; the input
+        is not mutated.
+        """
+        budget_chars = self._budget * 4  # char/4 ≈ tokens
+        # Cheap upper bound: question + per-prop overhead + each prop text.
+        overhead_chars = len(question) + 200  # template scaffold ~ 50 tokens
+        cumulative = overhead_chars
+        keep: list[dict] = []
+        for p in propositions:
+            prop_chars = len(p.get("text", "")) + 100  # template per-prop scaffold
+            if cumulative + prop_chars > budget_chars and keep:
+                break
+            cumulative += prop_chars
+            keep.append(p)
+        return keep
+
     async def answer(
         self,
         *,
@@ -69,6 +89,12 @@ class Answerer:
     ) -> AnswerResult:
         if not propositions:
             return AnswerResult(text=_NO_INFO, citations=[])
+
+        # Truncate from the tail if the rendered prompt would exceed the budget.
+        # Propositions arrive in score order from Task 9, so the tail carries the
+        # weakest evidence — safe to drop. The char/4 token heuristic mirrors
+        # Task 6's ingest buffering.
+        propositions = self._truncate_to_budget(question, propositions)
 
         items = [
             {
@@ -87,15 +113,20 @@ class Answerer:
             text = str(text)
 
         citations: list[Citation] = []
-        for m in re.finditer(r"\[P(\d+)\]", text):
-            n = int(m.group(1))
-            if 1 <= n <= len(propositions):
-                p = propositions[n - 1]
-                citations.append(
-                    Citation(
-                        proposition_id=_normalize_pid(p["id"]),
-                        source_doc=p.get("source_doc", ""),
-                        source_span=p.get("source_span", ""),
+        # Accept both singleton citations [P1] and grouped citations [P1, P2; P3].
+        # The outer regex captures the whole bracketed group; the inner regex pulls
+        # out each Pn number. Local LLMs commonly emit grouped citations and we
+        # don't want them silently dropped.
+        for m in re.finditer(r"\[(P\d+(?:\s*[,;]\s*P\d+)*)\]", text):
+            for num_str in re.findall(r"P(\d+)", m.group(1)):
+                n = int(num_str)
+                if 1 <= n <= len(propositions):
+                    p = propositions[n - 1]
+                    citations.append(
+                        Citation(
+                            proposition_id=_normalize_pid(p["id"]),
+                            source_doc=p.get("source_doc", ""),
+                            source_span=p.get("source_span", ""),
+                        )
                     )
-                )
         return AnswerResult(text=text, citations=citations)

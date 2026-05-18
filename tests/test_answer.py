@@ -135,3 +135,92 @@ def test_answer_template_renders_no_info_marker_distinguishable():
     from oragraphrag.answer import _NO_INFO
 
     assert "don't have information" in _NO_INFO.lower()
+
+
+@pytest.mark.asyncio
+async def test_answer_accepts_grouped_citations():
+    """LLMs commonly emit [P1, P2] for multi-prop claims. Don't drop them."""
+    llm = _StubLLM("Both vector indexes [P1, P2] accelerate ANN search.")
+    a = Answerer(llm=llm, token_budget=4000)
+    result = await a.answer(
+        question="Q?",
+        propositions=[
+            {"id": b"\x01", "text": "t1", "source_doc": "d", "source_span": "s"},
+            {"id": b"\x02", "text": "t2", "source_doc": "d", "source_span": "s"},
+        ],
+    )
+    assert len(result.citations) == 2
+    assert {c.proposition_id for c in result.citations} == {b"\x01", b"\x02"}
+
+
+@pytest.mark.asyncio
+async def test_answer_accepts_semicolon_separated_grouped_citations():
+    llm = _StubLLM("Three claims [P1; P2; P3].")
+    a = Answerer(llm=llm, token_budget=4000)
+    result = await a.answer(
+        question="Q?",
+        propositions=[
+            {"id": b"\x01", "text": "t1", "source_doc": "d", "source_span": "s"},
+            {"id": b"\x02", "text": "t2", "source_doc": "d", "source_span": "s"},
+            {"id": b"\x03", "text": "t3", "source_doc": "d", "source_span": "s"},
+        ],
+    )
+    assert {c.proposition_id for c in result.citations} == {b"\x01", b"\x02", b"\x03"}
+
+
+@pytest.mark.asyncio
+async def test_answer_truncates_propositions_to_token_budget():
+    """When the rendered prompt would exceed token_budget, drop tail propositions."""
+    llm = _StubLLM("answer")
+    a = Answerer(llm=llm, token_budget=200)  # very small budget
+    # Each prop is ~400 chars = ~100 tokens. With budget=200 tokens and the
+    # scaffold overhead, at most 1-2 propositions should fit.
+    propositions = [
+        {
+            "id": bytes([i]),
+            "text": "x" * 400,
+            "source_doc": "d",
+            "source_span": "s",
+        }
+        for i in range(1, 11)  # 10 propositions
+    ]
+    await a.answer(question="Q?", propositions=propositions)
+    # The rendered prompt should be substantially shorter than 10 props * 400 chars.
+    assert llm.last_prompt is not None
+    # The full untruncated set would be ~4000 chars of proposition text alone.
+    # The budget should have kept the prompt well under that.
+    assert len(llm.last_prompt) < 1500
+
+
+@pytest.mark.asyncio
+async def test_answer_truncation_keeps_highest_ranked_propositions():
+    """Truncation drops the TAIL (lowest-ranked) propositions, not the head."""
+    llm = _StubLLM("answer")
+    a = Answerer(llm=llm, token_budget=150)
+    propositions = [
+        {"id": b"\x01", "text": "first proposition " * 30, "source_doc": "d", "source_span": "s"},
+        {"id": b"\x02", "text": "second proposition " * 30, "source_doc": "d", "source_span": "s"},
+        {"id": b"\x03", "text": "third proposition " * 30, "source_doc": "d", "source_span": "s"},
+    ]
+    await a.answer(question="Q?", propositions=propositions)
+    assert llm.last_prompt is not None
+    # The highest-ranked (first) proposition's text must appear; the lowest-ranked
+    # (third) should be truncated.
+    assert "first proposition" in llm.last_prompt
+    assert "third proposition" not in llm.last_prompt
+
+
+@pytest.mark.asyncio
+async def test_answer_truncation_keeps_at_least_one_proposition():
+    """Even with a tiny budget, the highest-ranked proposition must be kept
+    so the LLM has something to ground on. Otherwise empty-propositions
+    short-circuit would have fired."""
+    llm = _StubLLM("answer")
+    a = Answerer(llm=llm, token_budget=10)  # absurdly small
+    propositions = [
+        {"id": b"\x01", "text": "x" * 5000, "source_doc": "d", "source_span": "s"},
+    ]
+    result = await a.answer(question="Q?", propositions=propositions)
+    # Should NOT short-circuit to _NO_INFO since the caller provided a prop.
+    assert "don't have information" not in result.text.lower()
+    assert llm.last_prompt is not None
