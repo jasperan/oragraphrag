@@ -254,3 +254,81 @@ async def test_pipeline_concurrency_bounded_by_config():
     ]
     await p.run(bufs)
     assert extractor.peak_concurrent <= 3
+
+
+@pytest.mark.asyncio
+async def test_pipeline_one_bad_buffer_does_not_abort_the_rest(tmp_path, monkeypatch):
+    """Spec §11: on extractor failure, log to logs/extract-failures.jsonl
+    and continue with the next buffer."""
+
+    monkeypatch.chdir(tmp_path)
+
+    class _FlakyExtractor:
+        """First call raises ExtractionError; subsequent calls return empty."""
+
+        def __init__(self):
+            self.calls = 0
+
+        async def extract(self, passage):
+            self.calls += 1
+            if self.calls == 1:
+                from oragraphrag.extract import ExtractionError
+
+                raise ExtractionError("synthetic")
+            return {"propositions": []}
+
+    cfg = Config()
+    cfg.embeddings.dim = 8
+    g = _SpyGraph()
+    extractor = _FlakyExtractor()
+    p = IngestPipeline(cfg=cfg, graph=g, embedder=_StubEmbedder(), extractor=extractor)
+    bufs = [
+        Buffer(doc_id="d.md", section_path="s", text=f"t{i}", span_hashes=[f"h{i}"])
+        for i in range(3)
+    ]
+    stats = await p.run(bufs)
+
+    # All 3 buffers processed; 1 failed, 2 succeeded with empty propositions.
+    assert stats["buffers"] == 3
+    assert stats["failed"] == 1
+    assert extractor.calls == 3
+    # The two successful buffers' spans are ledgered; the failed one's are NOT.
+    assert "h1" in g.ledger
+    assert "h2" in g.ledger
+    assert "h0" not in g.ledger
+
+    # The failure log file exists and contains one JSONL record.
+    log_path = tmp_path / "logs" / "extract-failures.jsonl"
+    assert log_path.exists()
+    lines = log_path.read_text().strip().splitlines()
+    assert len(lines) == 1
+    import json as _json
+    rec = _json.loads(lines[0])
+    assert rec["doc_id"] == "d.md"
+    assert rec["span_hashes"] == ["h0"]
+    assert rec["error_type"] == "ExtractionError"
+    assert "synthetic" in rec["error_message"]
+
+
+@pytest.mark.asyncio
+async def test_pipeline_combines_embeddings_into_single_batch():
+    """Propositions and entities should be embedded in ONE backend call."""
+
+    class _CountingEmbedder:
+        dim = 8
+
+        def __init__(self):
+            self.call_count = 0
+
+        async def embed(self, texts, *, normalize: bool = True):
+            self.call_count += 1
+            return np.ones((len(texts), 8), dtype=np.float32)
+
+    cfg = Config()
+    cfg.embeddings.dim = 8
+    g = _SpyGraph()
+    embedder = _CountingEmbedder()
+    p = IngestPipeline(cfg=cfg, graph=g, embedder=embedder, extractor=_StubExtractor())
+    buf = Buffer(doc_id="d", section_path="s", text="t", span_hashes=["h"])
+    await p.run([buf])
+    assert embedder.call_count == 1

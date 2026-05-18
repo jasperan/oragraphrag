@@ -13,13 +13,22 @@ run inside the semaphore so we don't overrun the DB connection pool
 from __future__ import annotations
 
 import asyncio
+import json
+import logging
 from collections.abc import Iterable
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
-import numpy as np
+import oracledb
 
 from oragraphrag.config import Config
+from oragraphrag.extract import ExtractionError
 from oragraphrag.ingest import Buffer
+
+_FAILURE_LOG_PATH = Path("logs") / "extract-failures.jsonl"
+
+logger = logging.getLogger(__name__)
 
 
 class IngestPipeline:
@@ -35,6 +44,7 @@ class IngestPipeline:
         stats = {
             "buffers": 0,
             "skipped": 0,
+            "failed": 0,
             "propositions": 0,
             "rels": 0,
             "entities": 0,
@@ -50,10 +60,34 @@ class IngestPipeline:
                 stats["skipped"] += 1
                 return
             async with sem:
-                await self._process_one(buf, stats)
+                try:
+                    await self._process_one(buf, stats)
+                except (ExtractionError, oracledb.DatabaseError) as e:
+                    stats["failed"] += 1
+                    self._log_failure(buf, e)
+                    # Continue — one bad buffer must not abort the whole ingest.
 
         await asyncio.gather(*(process(b) for b in buffers))
         return stats
+
+    def _log_failure(self, buf: Buffer, exc: Exception) -> None:
+        """Append a JSONL record to logs/extract-failures.jsonl. Best-effort: if
+        the log file cannot be written, log a warning and continue.
+        """
+        record = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "doc_id": buf.doc_id,
+            "section_path": buf.section_path,
+            "span_hashes": list(buf.span_hashes),
+            "error_type": type(exc).__name__,
+            "error_message": str(exc),
+        }
+        try:
+            _FAILURE_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with _FAILURE_LOG_PATH.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(record) + "\n")
+        except OSError as log_err:
+            logger.warning("could not write to %s: %s", _FAILURE_LOG_PATH, log_err)
 
     async def _process_one(self, buf: Buffer, stats: dict[str, int]) -> None:
         payload = await self.extractor.extract(buf.text)
@@ -75,14 +109,14 @@ class IngestPipeline:
                         seen.add(k)
                         entity_set.append(k)
 
-        # Embed propositions and entities in two batches.
+        # Single batch call to halve embedding round-trips. The schema validator
+        # guarantees propositions is non-empty here (we returned at line 65 otherwise)
+        # and each triple has subject + object, so entity_set is also non-empty.
         prop_texts = [p["text"] for p in propositions]
-        prop_embs = await self.embedder.embed(prop_texts)
-        entity_embs = (
-            await self.embedder.embed(entity_set)
-            if entity_set
-            else np.empty((0, self.cfg.embeddings.dim), dtype=np.float32)
-        )
+        combined = prop_texts + entity_set
+        combined_embs = await self.embedder.embed(combined)
+        prop_embs = combined_embs[: len(prop_texts)]
+        entity_embs = combined_embs[len(prop_texts) :]
 
         # Upsert entities first so we have ids for the rel inserts.
         entity_ids: dict[str, bytes] = {}
