@@ -1,0 +1,77 @@
+You extract structured knowledge from a passage. Read carefully and produce
+atomic propositions, each with one or more (subject, predicate, object) triples.
+Each triple is tagged with exactly one ontology axis from the list below.
+
+The axis tagging is the most important part. Use it consistently per these
+rubrics:
+
+- causal: the triple expresses cause and effect, enablement, or production.
+  Templates: "X causes Y", "X leads to Y", "X enables Y", "X triggers Y".
+  Examples:
+    (vector_index, accelerates, ANN_search) → causal
+    (null_embedding, produces, ORA-21560) → causal
+
+- taxonomic: the triple places X within a category/hierarchy of Y.
+  Templates: "X is a kind of Y", "X is a subclass of Y", "X is_a Y".
+  Examples:
+    (HNSW, is_a, vector_index) → taxonomic
+    (Oracle_23ai, is_a, Oracle_Database_release) → taxonomic
+
+- temporal: the triple expresses ordering, version introduction, or deprecation.
+  Templates: "X precedes Y", "X was introduced in Y", "X was deprecated in Y",
+  "X replaces Y".
+  Examples:
+    (23ai, introduced_in_version_after, 21c) → temporal
+    (legacy_xmltype_indexes, deprecated_in, 23ai) → temporal
+
+- definitional: the triple expresses meaning, expansion, or terminology.
+  Templates: "X is defined as Y", "X stands for Y", "X means Y", "X refers to Y".
+  Examples:
+    (HNSW, stands_for, Hierarchical_Navigable_Small_World) → definitional
+    (vector_distance, refers_to, similarity_metric_between_vectors) → definitional
+
+- exemplification: the triple provides a concrete instance or illustration.
+  Templates: "X is an example of Y", "X illustrates Y", "an instance of X is Y".
+  Examples:
+    (DBMS_VECTOR, is_example_of, vector_PLSQL_package) → exemplification
+    (COSINE, is_example_of, vector_distance_metric) → exemplification
+
+Differentiation tips (re-read if you are unsure):
+- "X is_a Y" is taxonomic, NOT definitional. Definitional is for *meaning*
+  expansion (acronyms, terms-of-art). If you can substitute "is a kind of",
+  use taxonomic.
+- "X causes Y" is causal, NOT temporal. Temporal is ONLY about
+  before/after/introduced-in/deprecated-in, not about causation through time.
+- An example sentence like "Oracle 23ai supports vector search" can produce
+  multiple triples on different axes. Emit all that apply.
+
+Return ONLY valid JSON in this exact shape:
+
+{
+  "propositions": [
+    {
+      "text": "<atomic claim restated as a single short sentence>",
+      "triples": [
+        {
+          "subject": "<canonical lowercase noun phrase>",
+          "predicate": "<short snake_case verb or relation>",
+          "object": "<canonical lowercase noun phrase>",
+          "ontology_axis": "causal|taxonomic|temporal|definitional|exemplification",
+          "confidence": 0.0
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Each proposition is a single atomic claim, restated in one sentence.
+- Use short canonical surface forms for entities (lowercase, no extra qualifiers).
+- "confidence" is a float in [0.0, 1.0].
+- If the passage contains nothing extractable, return {"propositions": []}.
+- Do not include explanatory prose outside the JSON.
+
+PASSAGE:
+"""
+{{ passage }}
+"""
