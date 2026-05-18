@@ -96,17 +96,45 @@ def validate_payload(payload: Any) -> dict[str, Any]:
                 raise ExtractionError(
                     f"proposition[{i}].triples[{j}] invalid axis: {t['ontology_axis']!r}"
                 )
-            try:
-                conf = float(t["confidence"])
-            except (TypeError, ValueError) as e:
+            conf_raw = t["confidence"]
+            if isinstance(conf_raw, bool) or not isinstance(conf_raw, (int, float)):
                 raise ExtractionError(
-                    f"proposition[{i}].triples[{j}].confidence is not numeric"
-                ) from e
+                    f"proposition[{i}].triples[{j}].confidence is not a number"
+                )
+            conf = float(conf_raw)
             if not (0.0 <= conf <= 1.0):
                 raise ExtractionError(
                     f"proposition[{i}].triples[{j}].confidence out of [0, 1]: {conf}"
                 )
     return payload
+
+
+def _strip_markdown_fence(s: str) -> str:
+    """Strip a single ```[lang]?\n ... ``` fence if present.
+
+    Many LLMs wrap JSON responses in markdown fences even when told not to.
+    Defensive: cheaper to strip than to pay for a repair round-trip.
+    """
+    text = s.strip()
+    if not text.startswith("```"):
+        return text
+    # Drop the opening fence and optional language tag.
+    first_newline = text.find("\n")
+    if first_newline == -1:
+        return text[3:].rstrip("`").strip()
+    text = text[first_newline + 1 :]
+    # Drop the trailing fence.
+    if text.rstrip().endswith("```"):
+        text = text.rstrip()[:-3].rstrip()
+    return text
+
+
+def _parse_json_string(s: str) -> Any:
+    cleaned = _strip_markdown_fence(s)
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as e:
+        raise ExtractionError(f"LLM returned invalid JSON string: {e}") from e
 
 
 class Extractor:
@@ -124,10 +152,7 @@ class Extractor:
             prompt, schema=EXTRACT_SCHEMA, temperature=0.0
         )
         if isinstance(payload, str):
-            try:
-                payload = json.loads(payload)
-            except json.JSONDecodeError as e:
-                raise ExtractionError(f"LLM returned invalid JSON string: {e}") from e
+            payload = _parse_json_string(payload)
         return validate_payload(payload)
 
     async def extract(self, passage: str) -> dict[str, Any]:
