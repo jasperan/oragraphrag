@@ -27,3 +27,18 @@ def test_config_yaml_load(tmp_path, monkeypatch):
     cfg = Config.from_yaml(cfg_file)
     assert cfg.llm.provider == "ollama"
     assert cfg.embeddings.dim == 768
+
+
+def test_config_yaml_null_section_falls_back_to_defaults(tmp_path, monkeypatch):
+    cfg_file = tmp_path / "config.yaml"
+    cfg_file.write_text("llm: null\nembeddings:\n  dim: 768\n")
+    monkeypatch.chdir(tmp_path)
+    cfg = Config.from_yaml(cfg_file)
+    assert cfg.llm.provider == "oci_grok"  # back to default
+    assert cfg.embeddings.dim == 768       # explicit override applied
+
+
+def test_config_lowercase_env_var_works(monkeypatch):
+    monkeypatch.setenv("ogr__llm__provider", "ollama")
+    cfg = Config()
+    assert cfg.llm.provider == "ollama"

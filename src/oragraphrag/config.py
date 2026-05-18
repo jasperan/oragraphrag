@@ -97,5 +97,7 @@ class Config(BaseSettings):
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> Config:
+        """Load config from a YAML file. None-valued sections fall back to defaults."""
         data = yaml.safe_load(Path(path).read_text()) or {}
+        data = {k: v for k, v in data.items() if v is not None}
         return cls(**data)
