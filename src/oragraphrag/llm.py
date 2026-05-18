@@ -8,7 +8,9 @@ each backend stays simple.
 
 from __future__ import annotations
 
+import asyncio
 import json
+import os
 from typing import Any, Protocol
 
 import httpx
@@ -33,9 +35,16 @@ class _HttpClient(Protocol):
 class OllamaBackend:
     """Talks to /api/chat with format=json when a schema is requested."""
 
-    def __init__(self, cfg: OllamaConfig, http: _HttpClient | None = None):
+    def __init__(
+        self,
+        cfg: OllamaConfig,
+        timeout_s: float = 60.0,
+        http: _HttpClient | None = None,
+    ):
         self.cfg = cfg
-        self._http = http or httpx.AsyncClient()
+        self._timeout_s = timeout_s
+        self._http_owned = http is None
+        self._http = http if http is not None else httpx.AsyncClient(timeout=self._timeout_s)
 
     async def complete(
         self,
@@ -53,7 +62,7 @@ class OllamaBackend:
         if schema is not None:
             payload["format"] = "json"
         url = f"{self.cfg.base_url.rstrip('/')}/api/chat"
-        resp = await self._http.post(url, json=payload, timeout=None)
+        resp = await self._http.post(url, json=payload, timeout=self._timeout_s)
         resp.raise_for_status()
         content = resp.json()["message"]["content"]
         if schema is not None:
@@ -63,34 +72,52 @@ class OllamaBackend:
                 raise LLMError(f"ollama returned non-JSON when schema requested: {e}") from e
         return content
 
+    async def aclose(self) -> None:
+        """Close the underlying http client if we created it ourselves."""
+        if self._http_owned and self._http is not None:
+            # Only call aclose on real httpx.AsyncClient instances; stubs may not have it.
+            close = getattr(self._http, "aclose", None)
+            if close is not None:
+                await close()
+
 
 class OciGrokBackend:
     """OCI Generative AI Grok 4.3 backend.
 
-    Auth via ~/.oci/config profile (default), falling back to instance
-    principals when running inside OCI. This mirrors the Oracle AI Developer
-    Hub "Choose Your Path" pattern.
+    Auth resolves in this order:
+      1. If env var OCI_RESOURCE_PRINCIPAL_VERSION is set (i.e., running inside
+         OCI), use instance-principal signer.
+      2. Otherwise, read ~/.oci/config (the standard dev path).
 
-    Note: the OCI SDK is synchronous; we wrap the call in `asyncio.to_thread`
-    so the async surface is uniform with OllamaBackend.
+    The OCI SDK is synchronous; calls are wrapped in asyncio.to_thread so the
+    async surface is uniform with OllamaBackend. Client construction is
+    guarded by asyncio.Lock so concurrent first-callers do not race.
     """
 
     def __init__(self, cfg: OciGrokConfig):
         self.cfg = cfg
         self._client = None
+        self._init_lock = asyncio.Lock()
 
-    def _client_init(self):
-        if self._client is None:
-            import oci
-            from oci.generative_ai_inference import GenerativeAiInferenceClient
-
-            try:
-                signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
-                self._client = GenerativeAiInferenceClient(config={}, signer=signer)
-            except Exception:
-                cfg_file = oci.config.from_file()
-                self._client = GenerativeAiInferenceClient(config=cfg_file)
+    async def _client_init(self):
+        async with self._init_lock:
+            if self._client is None:
+                self._client = await asyncio.to_thread(self._build_client_sync)
         return self._client
+
+    def _build_client_sync(self):
+        """Synchronous OCI SDK client construction. Called via asyncio.to_thread()."""
+        import oci
+        from oci.generative_ai_inference import GenerativeAiInferenceClient
+
+        # Prefer ~/.oci/config (the common dev case). Only attempt instance
+        # principals when explicitly running inside OCI (signaled by env var).
+        use_instance_principals = bool(os.environ.get("OCI_RESOURCE_PRINCIPAL_VERSION"))
+        if use_instance_principals:
+            signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+            return GenerativeAiInferenceClient(config={}, signer=signer)
+        cfg_file = oci.config.from_file()
+        return GenerativeAiInferenceClient(config=cfg_file)
 
     async def complete(
         self,
@@ -99,8 +126,8 @@ class OciGrokBackend:
         schema: dict | None = None,
         temperature: float = 0.0,
     ) -> str | dict:
-        import asyncio
-
+        # OCI SDK imports are kept inline so non-OCI users can import OllamaBackend
+        # without paying the SDK import cost or needing it installed.
         from oci.generative_ai_inference.models import (
             ChatDetails,
             GenericChatRequest,
@@ -109,7 +136,7 @@ class OciGrokBackend:
             TextContent,
         )
 
-        client = self._client_init()
+        client = await self._client_init()
         msg = Message(role="USER", content=[TextContent(text=prompt)])
         req = GenericChatRequest(
             messages=[msg],
@@ -130,14 +157,24 @@ class OciGrokBackend:
                 raise LLMError(f"oci_grok returned non-JSON when schema requested: {e}") from e
         return text
 
+    async def aclose(self) -> None:
+        """No-op; the OCI SDK client does not need explicit cleanup."""
+        return None
+
 
 class LLM:
     """Adapter selecting a backend by config; retries on transient failures.
 
+    Use as an async context manager so the underlying http client closes
+    cleanly:
+
+        async with LLM(cfg) as llm:
+            answer = await llm.complete(prompt)
+
     If `fallback_on_outage` is set in config, a failure of the primary
     backend after exhausting retries dispatches to the alternate backend
-    one time. This is the Choose-Your-Path-style fallback, not a recovery
-    shim — it is an explicit configuration option the user opts into.
+    one time. The fallback is a documented user-opt-in config feature,
+    defaulting to False.
     """
 
     def __init__(self, cfg: Config, http: _HttpClient | None = None):
@@ -152,7 +189,11 @@ class LLM:
 
     def _build(self, provider: str):
         if provider == "ollama":
-            return OllamaBackend(self.cfg.llm.ollama, http=self._http)
+            return OllamaBackend(
+                self.cfg.llm.ollama,
+                self.cfg.llm.request_timeout_s,
+                http=self._http,
+            )
         if provider == "oci_grok":
             return OciGrokBackend(self.cfg.llm.oci_grok)
         raise LLMError(f"unsupported provider: {provider}")
@@ -184,3 +225,14 @@ class LLM:
                 f"primary backend failed after {self.cfg.llm.max_retries} retries"
             ) from e
         raise LLMError("unreachable")
+
+    async def aclose(self) -> None:
+        await self._primary.aclose()
+        if self._fallback is not None:
+            await self._fallback.aclose()
+
+    async def __aenter__(self) -> LLM:
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb) -> None:
+        await self.aclose()
