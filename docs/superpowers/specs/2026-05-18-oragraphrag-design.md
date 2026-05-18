@@ -313,7 +313,7 @@ Total: ~15–18 focused days. Each milestone produces a tagged artifact.
 
 - Web UI.
 - Multi-ontology layered graphs (Approach C — paper's future work section).
-- Conversation-aware spreading activation (paper's future work section).
+- Conversation-aware spreading activation (paper's future work section). When this lands in v2, the working + episodic memory layer should be implemented via the [`oracleagentmemory`](https://pypi.org/project/oracleagentmemory/) PyPI package (Oracle 23ai-backed agent memory with semantic/episodic/working tiers). Our property graph remains the semantic graph; `oracleagentmemory` provides the per-conversation thread context and `get_context_card()` that drives carry-forward amplitudes across turns.
 - Sub-day incremental graph updates / online learning of ontology-axis vectors.
 - Cross-corpus federation.
 
