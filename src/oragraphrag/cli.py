@@ -244,6 +244,49 @@ def sources_cmd(
         store.close()
 
 
+@app.command("export")
+def export_cmd(
+    out: Path = typer.Option(..., "--out", help="Output JSONL path."),  # noqa: B008
+    format: str = typer.Option(  # noqa: A002,B008
+        "finetune",
+        "--format",
+        help="Output format. Currently only 'finetune' is supported.",
+    ),
+    config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
+    source: str | None = typer.Option(  # noqa: B008
+        None,
+        "--source",
+        help=(
+            "Scope export to a single source. Accepts a folder path "
+            "(hashed via source_id_for_folder) or a literal 'src_<hex>' id."
+        ),
+    ),
+) -> None:
+    """Export the accumulated graph as a JSONL fine-tuning corpus."""
+    if format != "finetune":
+        console.print(f"[red]unsupported format: {format!r}[/red]")
+        raise typer.Exit(2)
+
+    from oragraphrag.export import export_finetune
+    from oragraphrag.graph import GraphStore
+    from oragraphrag.memory import source_id_for_folder
+
+    cfg = _load_config(config)
+    source_filter: str | None = None
+    if source is not None:
+        source_filter = (
+            source if source.startswith("src_") else source_id_for_folder(source)
+        )
+
+    store = GraphStore(cfg)
+    store.connect()
+    try:
+        count = export_finetune(store, out, source_filter=source_filter)
+        console.print(f"[green]wrote {count} training examples to {out}[/green]")
+    finally:
+        store.close()
+
+
 @app.command("bench")
 def bench_cmd(
     suite: str = typer.Option(..., "--suite", help="Path to the bench suite JSONL."),  # noqa: B008

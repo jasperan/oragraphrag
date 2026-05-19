@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import array
 import json
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from importlib.resources import files
 
 import oracledb
@@ -552,6 +552,73 @@ class GraphStore:
             except Exception:
                 c.rollback()
                 raise
+
+    def iter_propositions_with_edges(
+        self,
+        *,
+        source_filter: str | None = None,
+    ) -> Iterator[tuple[dict, list[dict]]]:
+        """Yield (prop_row, edge_rows) per Proposition.
+
+        Each ``prop_row`` has id (bytes), text, source_doc, source_span,
+        source_id. Each entry in ``edge_rows`` has predicate, ontology_axis,
+        base_weight.
+
+        The edge match looks up every REL whose ``support_propositions``
+        JSON array contains this proposition's hex id. We use a single
+        ``SELECT predicate, ontology_axis, base_weight, support_propositions
+        FROM Rel`` and filter Python-side so behavior is uniform across the
+        23ai builds we target (JSON_EXISTS path-expression support varies).
+        Two-pass keeps the SQL simple at the cost of an O(props * rels)
+        membership test; export is offline so the constant factor is fine.
+        """
+        where = ""
+        bind: dict[str, object] = {}
+        if source_filter is not None:
+            where = " WHERE source_id = :sf"
+            bind["sf"] = source_filter
+
+        with self._conn() as c, c.cursor() as cur:
+            cur.execute(
+                "SELECT id, text, source_doc, source_span, source_id "
+                f"FROM Proposition{where}",
+                **bind,
+            )
+            prop_rows: list[dict] = []
+            for row in cur:
+                text_val = row[1].read() if hasattr(row[1], "read") else (row[1] or "")
+                prop_rows.append(
+                    {
+                        "id": bytes(row[0]) if row[0] is not None else None,
+                        "text": text_val,
+                        "source_doc": row[2],
+                        "source_span": row[3],
+                        "source_id": row[4],
+                    }
+                )
+
+            # Cache the full Rel table once and index by support_prop hex id.
+            # For a graphified corpus this is bounded by total edges, which
+            # is small relative to the dump cost itself.
+            cur.execute(
+                "SELECT predicate, ontology_axis, base_weight, support_propositions "
+                "FROM Rel"
+            )
+            edges_by_prop: dict[str, list[dict]] = {}
+            for e in cur:
+                props = self._read_json(e[3]) or []
+                edge = {
+                    "predicate": e[0],
+                    "ontology_axis": e[1],
+                    "base_weight": float(e[2]),
+                }
+                for hex_id in props:
+                    edges_by_prop.setdefault(str(hex_id), []).append(edge)
+
+        for prop in prop_rows:
+            pid = prop["id"]
+            pid_hex = pid.hex() if isinstance(pid, bytes) else str(pid)
+            yield prop, edges_by_prop.get(pid_hex, [])
 
     def fetch_propositions(
         self,
