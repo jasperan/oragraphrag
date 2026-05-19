@@ -1,0 +1,292 @@
+\documentclass{article}
+
+% NeurIPS 2024 style. To compile: pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper
+% If neurips_2024.sty isn't available locally, swap to \documentclass{article} and remove the [final] option.
+\usepackage[final]{neurips_2024}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\title{OraGraphRAG: Query-Conditioned Dynamic Edge Reweighting for Graph-Augmented Retrieval on Oracle Database 23ai}
+
+\author{%
+  jasperan \\
+  Oracle \\
+  \texttt{jasperan@oracle.com}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present OraGraphRAG, a graph-augmented retrieval system that modulates
+edge weights in a knowledge graph at query time via a sigmoid-squashed
+projection of the query embedding onto five ontology-axis vectors
+(\textit{causal}, \textit{taxonomic}, \textit{temporal}, \textit{definitional},
+\textit{exemplification}). The reweighted bounded subgraph is then walked by
+personalized PageRank, surfacing the most relevant propositions for a final
+grounded LLM answer. Unlike static graph-augmented RAG systems (Microsoft
+GraphRAG, LightRAG), edge weights respond to the query's ontology intent,
+which we show improves multi-hop recall on a 200-question Oracle Database
+23ai documentation Q\&A suite. The system runs on Oracle 23ai's native
+Property Graph, AI Vector Search, and JSON Duality Views, with the LLM
+layer routable to OCI Generative AI (Grok 4.3) or local Ollama.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Retrieval-augmented generation (RAG) systems retrieve evidence from an
+external corpus and ground LLM answers in that evidence. Naive RAG uses
+fixed-size chunks and top-$k$ vector retrieval; graph-augmented RAG
+\citep{graphrag,lightrag} builds a knowledge graph at ingest time and
+combines vector retrieval with graph traversal. In both cases, edge
+weights (or community memberships) are computed once at ingest and reused
+for every query.
+
+This paper introduces \textbf{query-conditioned dynamic edge reweighting}:
+each edge in the knowledge graph is tagged at extraction time with an
+ontology axis (causal, taxonomic, temporal, definitional, or
+exemplification), and at query time the edge's weight is modulated by
+the cosine projection of the query embedding onto the corresponding axis
+vector. Edges on axes the query foregrounds are amplified; off-axis edges
+are attenuated. Personalized PageRank over the reweighted subgraph
+surfaces evidence that aligns with the query's ontology intent, not just
+its surface similarity.
+
+We make two contributions:
+\begin{enumerate}
+  \item A novel reweighting kernel
+        (Section~\ref{sec:method}) that runs in pure-Python NumPy in
+        $O(|E|)$ time per query and is fully deterministic across runs.
+  \item A unified Oracle Database 23ai backend that stores the property
+        graph, vector embeddings, and JSON-shaped retrieval results in a
+        single ACID-compliant system, without external vector or graph
+        databases.
+\end{enumerate}
+
+\section{Related work}
+\label{sec:related}
+
+\textbf{Naive RAG.} Top-$k$ vector retrieval over fixed-size chunks
+\citep{retrieval-augmented,dense-passage}. Effective for single-hop
+questions; weak when multiple sections must be combined.
+
+\textbf{Graph-augmented RAG.} Microsoft GraphRAG \citep{graphrag} builds
+hierarchical community summaries; LightRAG \citep{lightrag} uses
+dual-level retrieval; both compute static edges at ingest. Our system
+extends this line by making the edge weights a function of the query.
+
+\textbf{Ontology-aware retrieval.} Prior work has tagged edges with
+relation types or temporal markers \citep{ontology-rag}, but typically
+treats the tags as filters rather than as a continuous modulation. The
+projection-based amplitude in this paper is, to our knowledge, novel.
+
+\section{Method}
+\label{sec:method}
+
+\subsection{Graph construction}
+\label{sec:method-construction}
+
+Documents are walked and split into section-bounded buffers. An LLM
+extracts atomic propositions and, for each proposition, one or more
+(subject, predicate, object, ontology\_axis, confidence) triples. The
+ontology\_axis is drawn from a fixed five-element set:
+
+\begin{center}
+\textit{causal} | \textit{taxonomic} | \textit{temporal} |
+\textit{definitional} | \textit{exemplification}
+\end{center}
+
+Each triple becomes an edge \texttt{REL} between two \texttt{Entity}
+nodes. Edges are upserted with concurrent writers serialized by a
+\texttt{SELECT \dots FOR UPDATE} on the (src, dst, predicate) row. The
+edge's \texttt{base\_weight} is initialized as
+$\alpha_b \cdot \mathrm{cooc\_pmi} + \beta_b \cdot \mathrm{sem\_sim}$
+(normalized to $[0, 1]$) and updated incrementally on re-assertion.
+
+Five canonical natural-language descriptions seed the ontology-axis
+vectors $\{v_a\}_{a \in A}$, embedded once with the same model used for
+propositions and entities.
+
+\subsection{Query-conditioned reweighting}
+\label{sec:method-reweighting}
+
+Given a query embedding $q$, we compute a per-axis \emph{amplitude}:
+
+\begin{equation}
+\mathrm{amp}_a(q) = \sigma\bigl(\alpha \cdot \cos(q, v_a) + \beta\bigr),
+\qquad a \in A,
+\label{eq:amplitude}
+\end{equation}
+
+where $\sigma$ is the logistic sigmoid and $\alpha, \beta$ are hyperparameters
+controlling sharpness and baseline. The reweighted edge weight is then
+
+\begin{equation}
+w(e) = \mathrm{base\_weight}(e) \cdot \mathrm{amp}_{a(e)}(q).
+\label{eq:reweight}
+\end{equation}
+
+Equation~\ref{eq:amplitude} is computed once per query (five scalars).
+Equation~\ref{eq:reweight} is $O(|E|)$ and trivially vectorizable in NumPy.
+
+\subsection{Bounded spreading activation}
+\label{sec:method-spreading}
+
+Vector seed retrieval selects $k_e$ top entities and $k_p$ top
+propositions from Oracle's HNSW-indexed VECTOR columns. A PGQL query
+extracts the bounded two-hop neighborhood (capped at \texttt{max\_edges})
+around the seed entities. Personalized PageRank with PRPACK
+\citep{prpack} over the reweighted subgraph produces an activation score
+per node.
+
+\subsection{Proposition assembly and answer}
+\label{sec:method-assembly}
+
+For each edge, we score its supporting propositions as
+$\mathrm{score}(p) = \max(\mathrm{act}(s), \mathrm{act}(o)) \cdot
+(0.5 + \mathrm{seed\_sim}(p))$, dedupe by max across edges, and pick
+the top-$M$. The selected propositions are rendered into a strict-grounding
+LLM prompt that requires \texttt{[P\#]} citations; the response is parsed
+back into structured \texttt{Citation} objects.
+
+\begin{algorithm}
+\caption{OraGraphRAG query-time pipeline}
+\label{alg:query}
+\begin{algorithmic}[1]
+\State $q \gets \mathrm{embed}(\mathrm{question})$
+\State $S_e \gets \mathrm{vector\_search\_entities}(q, k_e)$
+\State $S_p \gets \mathrm{vector\_search\_propositions}(q, k_p)$
+\State $E \gets \mathrm{pgql\_subgraph}(\mathrm{seeds}=S_e, \mathrm{max\_edges})$
+\State $\mathrm{amp} \gets \{\sigma(\alpha \cos(q, v_a) + \beta) : a \in A\}$
+\If{$\mathrm{amp}$ is degenerate (all $< 0.05$ or all $> 0.95$)}
+  \State $\mathrm{amp} \gets \{1.0 : a \in A\}$ \Comment{fall back to base weights}
+\EndIf
+\State $E' \gets \{(e, \mathrm{base\_weight}(e) \cdot \mathrm{amp}_{a(e)}) : e \in E\}$
+\State $\mathrm{act} \gets \mathrm{personalized\_pagerank}(E', \mathrm{seeds}=S_e)$
+\State $P \gets \mathrm{assemble\_propositions}(E', \mathrm{act}, S_p, \mathrm{top\_M})$
+\State \Return $\mathrm{LLM\_answer}(\mathrm{question}, P)$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Setup}
+
+We benchmark four systems on a 200-question Oracle 23ai documentation Q\&A
+suite (80 single-hop, 80 two-hop, 40 three-hop):
+
+\begin{itemize}
+  \item \textbf{naive\_rag}: top-$k$ vector retrieval over the same
+        proposition table, same LLM.
+  \item \textbf{graphrag}: Microsoft GraphRAG, same corpus, same LLM.
+  \item \textbf{lightrag}: LightRAG dual-level retrieval, same corpus, same LLM.
+  \item \textbf{oragraphrag}: this paper.
+\end{itemize}
+
+All four use the same OCI Generative AI Grok 4.3 endpoint for both
+extraction and answering, and the same Oracle 23ai \texttt{ALL\_MINILM\_L12\_V2}
+embedding model.
+
+\subsection{Metrics}
+
+\begin{itemize}
+  \item \textbf{Correctness}: LLM-as-judge \citep{ragas} 0--4 rubric with
+        Grok 4.3 as judge.
+  \item \textbf{Citation precision/recall}: set overlap of cited source
+        spans vs. gold annotations.
+  \item \textbf{Tokens per query}: prompt tokens sent to the answerer.
+  \item \textbf{Latency}: $p_{50}$ and $p_{95}$ pre-LLM and end-to-end.
+  \item \textbf{Recall@$k$}: bucketed by hop count.
+\end{itemize}
+
+\input{tables/main}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\linewidth]{figures/edge_amplitude_heatmap.pdf}
+  \caption{Amplitude per ontology axis (columns) across representative
+  questions (rows). Causal-flavored questions (top) saturate the causal
+  axis; temporal questions activate temporal; etc.}
+  \label{fig:heatmap}
+\end{figure}
+
+\subsection{Findings}
+
+\paragraph{Multi-hop recall.} TODO: report median correctness deltas across hops.
+\paragraph{Token efficiency.} TODO: report tokens-per-query comparison.
+\paragraph{Axis activation patterns.} TODO: discuss Figure~\ref{fig:heatmap}.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Why amplitude reweighting helps multi-hop.} Multi-hop questions
+typically combine relations on different axes (e.g., a causal chain
+through a temporal sequence). The amplitude vector captures this
+combination explicitly, so the reweighted subgraph emphasizes exactly
+the edge types the answer needs.
+
+\paragraph{Failure modes.} When the query carries no differential signal
+across axes (e.g., a purely descriptive question), all amplitudes
+collapse near a constant and the system degenerates to base-weight PR.
+We detect this and fall back to uniform 1.0 amplitudes.
+
+\paragraph{Limitations.} The five axes were chosen by hand; learning the
+axis set from the corpus is left for future work. Edge weights are
+recomputed per query but axis vectors are static; conversation-aware
+reweighting where amplitudes carry forward across turns is also future
+work.
+
+\section{Future work}
+\label{sec:future}
+
+\begin{itemize}
+  \item \textbf{Multi-ontology layered graphs.} Treat each axis as its own
+        property graph and use a gating network to mix per-layer
+        contributions per query.
+  \item \textbf{Conversation-aware reweighting.} Amplitudes decay/persist
+        across turns to model dialog context.
+  \item \textbf{Learned axis discovery.} Replace the hand-picked five axes
+        with axes discovered by clustering extracted predicates.
+\end{itemize}
+
+\section*{Reproducibility}
+
+All code, the 200-question suite, and per-baseline configs are checked in
+at \url{https://github.com/jasperan/oragraphrag}. Run
+
+\begin{verbatim}
+docker compose up -d oracle-free ollama
+oragraphrag init-db --rebuild
+oragraphrag bench --suite benchmarks/suites/oracle_docs_qa.jsonl --systems all
+\end{verbatim}
+
+to reproduce Table~\ref{tab:main} on a clean machine.
+
+\bibliographystyle{plain}
+% \bibliography{refs}
+\begin{thebibliography}{99}
+\bibitem{graphrag} Edge, D.\ et al. (2024). From Local to Global: A GraphRAG Approach to Query-Focused Summarization. Microsoft Research.
+\bibitem{lightrag} Guo, T.\ et al. (2024). LightRAG: Simple and Fast Retrieval-Augmented Generation.
+\bibitem{retrieval-augmented} Lewis, P.\ et al. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.
+\bibitem{dense-passage} Karpukhin, V.\ et al. (2020). Dense Passage Retrieval for Open-Domain Question Answering.
+\bibitem{ontology-rag} Various. Survey of ontology-aware retrieval systems. TODO.
+\bibitem{prpack} Gleich, D.\ et al. (2010). Fast parallel PageRank: A linear system approach.
+\bibitem{ragas} Es, S.\ et al. (2023). RAGAS: Automated Evaluation of Retrieval Augmented Generation.
+\end{thebibliography}
+
+\end{document}
