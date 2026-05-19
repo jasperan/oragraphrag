@@ -84,19 +84,29 @@ class OllamaBackend:
 class OciGrokBackend:
     """OCI Generative AI Grok 4.3 backend.
 
-    Auth resolves in this order:
-      1. If env var OCI_RESOURCE_PRINCIPAL_VERSION is set (i.e., running inside
-         OCI), use instance-principal signer.
-      2. Otherwise, read ~/.oci/config (the standard dev path).
+    Patterned after agent-harness's OCIGenAIProvider. Auth resolves in this
+    order:
+      1. Instance-principal signer (works on OCI compute).
+      2. ~/.oci/config API-key profile (OCI_CONFIG_PROFILE env var).
 
-    The OCI SDK is synchronous; calls are wrapped in asyncio.to_thread so the
-    async surface is uniform with OllamaBackend. Client construction is
-    guarded by asyncio.Lock so concurrent first-callers do not race.
+    Compartment id comes from OCI_COMPARTMENT_ID env or
+    cfg.llm.oci_grok.compartment_ocid (env wins if set). Region comes from
+    OCI_REGION env or cfg.llm.oci_grok.region (env wins).
+
+    The OCI SDK is synchronous; chat calls go through asyncio.to_thread so
+    the async surface is uniform with OllamaBackend. Client construction is
+    guarded by asyncio.Lock so concurrent first-callers don't race.
+
+    Uses the role-specific message subclass UserMessage (not the generic
+    Message) and api_format="GENERIC" — required for xAI Grok models on the
+    OCI on-demand chat endpoint.
     """
 
     def __init__(self, cfg: OciGrokConfig):
         self.cfg = cfg
         self._client = None
+        self._compartment_id: str | None = None
+        self._region: str | None = None
         self._init_lock = asyncio.Lock()
 
     async def _client_init(self):
@@ -110,14 +120,41 @@ class OciGrokBackend:
         import oci
         from oci.generative_ai_inference import GenerativeAiInferenceClient
 
-        # Prefer ~/.oci/config (the common dev case). Only attempt instance
-        # principals when explicitly running inside OCI (signaled by env var).
-        use_instance_principals = bool(os.environ.get("OCI_RESOURCE_PRINCIPAL_VERSION"))
-        if use_instance_principals:
+        # Region: env wins over config.
+        self._region = os.environ.get("OCI_REGION") or self.cfg.region or "us-chicago-1"
+        endpoint = f"https://inference.generativeai.{self._region}.oci.oraclecloud.com"
+
+        # Compartment: env wins over config.
+        env_compartment = os.environ.get("OCI_COMPARTMENT_ID")
+        self._compartment_id = env_compartment or self.cfg.compartment_ocid or None
+
+        # Auth: instance principal first, then ~/.oci/config profile.
+        try:
             signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
-            return GenerativeAiInferenceClient(config={}, signer=signer)
-        cfg_file = oci.config.from_file()
-        return GenerativeAiInferenceClient(config=cfg_file)
+            client = GenerativeAiInferenceClient(
+                config={},
+                signer=signer,
+                service_endpoint=endpoint,
+                retry_strategy=oci.retry.NoneRetryStrategy(),
+            )
+        except Exception:
+            profile = os.environ.get("OCI_CONFIG_PROFILE", "DEFAULT")
+            config_path = os.environ.get("OCI_CONFIG_FILE", "~/.oci/config")
+            oci_config = oci.config.from_file(file_location=config_path, profile_name=profile)
+            if not self._compartment_id:
+                self._compartment_id = oci_config.get("compartment-id") or oci_config.get("tenancy")
+            client = GenerativeAiInferenceClient(
+                config=oci_config,
+                service_endpoint=endpoint,
+                retry_strategy=oci.retry.NoneRetryStrategy(),
+            )
+
+        if not self._compartment_id:
+            raise LLMError(
+                "OCI compartment id missing. Set OCI_COMPARTMENT_ID env var or "
+                "configure cfg.llm.oci_grok.compartment_ocid."
+            )
+        return client
 
     async def complete(
         self,
@@ -126,29 +163,33 @@ class OciGrokBackend:
         schema: dict | None = None,
         temperature: float = 0.0,
     ) -> str | dict:
-        # OCI SDK imports are kept inline so non-OCI users can import OllamaBackend
-        # without paying the SDK import cost or needing it installed.
+        # OCI SDK imports are kept inline so non-OCI users can import
+        # OllamaBackend without paying the SDK import cost.
         from oci.generative_ai_inference.models import (
             ChatDetails,
             GenericChatRequest,
-            Message,
             OnDemandServingMode,
             TextContent,
+            UserMessage,
         )
 
         client = await self._client_init()
-        msg = Message(role="USER", content=[TextContent(text=prompt)])
-        req = GenericChatRequest(
-            messages=[msg],
+        user_msg = UserMessage(role="USER", content=[TextContent(text=prompt)])
+        chat_request = GenericChatRequest(
+            api_format="GENERIC",
+            messages=[user_msg],
             temperature=temperature,
             max_tokens=4096,
+            is_stream=False,
+            top_p=1.0,
         )
         details = ChatDetails(
-            compartment_id=self.cfg.compartment_ocid,
+            compartment_id=self._compartment_id,
             serving_mode=OnDemandServingMode(model_id=self.cfg.model),
-            chat_request=req,
+            chat_request=chat_request,
         )
         resp = await asyncio.to_thread(client.chat, details)
+        # Response shape: resp.data.chat_response.choices[0].message.content[0].text
         text = resp.data.chat_response.choices[0].message.content[0].text
         if schema is not None:
             try:
