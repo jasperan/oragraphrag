@@ -109,6 +109,15 @@ class QueryPipeline:
             seed_sims,
             top_m=self.cfg.retrieval.pagerank.top_m_entities,
         )
+        # Union with vector-seed propositions so direct vector matches always
+        # surface even when no graph activation reaches them. This rescues
+        # questions whose entity names were canonicalized to verbose strings
+        # by the extractor and therefore don't seed the graph walk.
+        for pid in seed_sims:
+            if pid not in picked:
+                picked.append(pid)
+        # Cap at a sensible limit so the answer prompt stays within budget.
+        picked = picked[: self.cfg.retrieval.pagerank.top_m_entities]
         props = self.graph.fetch_propositions(picked) if picked else []
 
         t0 = time.perf_counter()

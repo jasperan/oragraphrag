@@ -241,11 +241,12 @@ async def test_query_seeds_propositions_pass_through_seed_sims():
 
 
 @pytest.mark.asyncio
-async def test_query_edges_nonempty_but_picked_empty_yields_no_info():
-    """Subgraph has an edge between non-seed nodes; PPR mass doesn't reach
-    them, so picked is empty. Answer must short-circuit to _NO_INFO without
-    calling fetch_propositions; edges_used should still expose the graph
-    evidence for the visualizer."""
+async def test_query_edges_nonempty_but_no_seeds_yields_no_info():
+    """Subgraph has an edge between non-seed nodes AND seed_props is empty.
+    PPR mass doesn't reach the edge, and there are no seed propositions to
+    union in, so picked is empty. Answer must short-circuit to _NO_INFO
+    without calling fetch_propositions; edges_used should still expose the
+    graph evidence for the visualizer."""
     cfg = Config()
     cfg.embeddings.dim = 5
     g = _StubGraph()
@@ -260,7 +261,10 @@ async def test_query_edges_nonempty_but_picked_empty_yields_no_info():
             "support_propositions": [b"\xcc".hex()],
         }
     ]
+    # Clear BOTH the props result and the seed propositions so the union
+    # has nothing to surface.
     g.props_result = []
+    g.seed_props_result = []
     p = QueryPipeline(
         cfg=cfg,
         graph=g,
@@ -273,3 +277,45 @@ async def test_query_edges_nonempty_but_picked_empty_yields_no_info():
     assert len(out.edges_used) == 1
     # No fetch_propositions call when picked is empty.
     assert not any(c[0] == "fp" for c in g.calls)
+
+
+@pytest.mark.asyncio
+async def test_query_surfaces_seed_propositions_when_graph_walk_misses():
+    """If the graph walk can't reach a proposition (e.g. its entities were
+    canonicalized to verbose strings that don't seed-vector match), the
+    seed proposition itself should still surface via the union path."""
+    cfg = Config()
+    cfg.embeddings.dim = 5
+    g = _StubGraph()
+    # Edge between two NON-seed nodes — graph walk can't reach b"\xaa".
+    g.subgraph_result = [
+        {
+            "src": b"\x99",
+            "dst": b"\x88",
+            "predicate": "p",
+            "ontology_axis": "causal",
+            "base_weight": 0.8,
+            "support_propositions": [b"\xcc".hex()],
+        }
+    ]
+    # But the vector seed search finds proposition b"\xaa" as a strong match.
+    g.seed_props_result = [
+        {"id": b"\xaa", "source_doc": "d", "source_span": "s", "distance": 0.05}
+    ]
+    g.props_result = [
+        {"id": b"\xaa", "text": "the answer", "source_doc": "d", "source_span": "s"}
+    ]
+    p = QueryPipeline(
+        cfg=cfg,
+        graph=g,
+        embedder=_StubEmbedder(),
+        llm=_StubLLM(),
+        axis_vectors=_axis_vectors(),
+    )
+    out = await p.query("q")
+    # Should NOT short-circuit to _NO_INFO because the seed proposition surfaced.
+    assert "don't have information" not in out.answer.text.lower()
+    # fetch_propositions was called with the seed prop id.
+    fp_calls = [c for c in g.calls if c[0] == "fp"]
+    assert len(fp_calls) == 1
+    assert b"\xaa" in fp_calls[0][1]

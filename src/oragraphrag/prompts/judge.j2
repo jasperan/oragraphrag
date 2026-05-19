@@ -1,12 +1,31 @@
-You are an answer judge. Score the predicted answer against the gold answer
-on a 0-4 rubric:
-  4 = fully correct, with citations that match the gold sources
-  3 = correct facts but missing or wrong citations
-  2 = partially correct
-  1 = mostly wrong but at least related
-  0 = wrong or off-topic
+You are an answer judge. Score the predicted answer against the gold
+answer on a 0-4 rubric. Focus on FACTUAL CORRECTNESS, not verbatim
+phrasing. The predicted answer can be worded differently, can be longer
+or shorter, and can include extra correct context.
 
-Return ONLY the integer score (0, 1, 2, 3, or 4). No prose. No explanation.
+Rubric:
+  4 = factually correct and complete. All key facts from the gold answer
+      are present in the predicted answer, and there are no factual
+      errors. Paraphrasing is fine.
+  3 = factually correct but incomplete. The predicted answer is on-topic
+      and contains no false claims, but omits one or more key facts from
+      the gold answer.
+  2 = partially correct. Some facts from the gold answer are present;
+      others are missing, wrong, or hedged.
+  1 = on-topic but mostly wrong. The predicted answer addresses the same
+      question but its factual content disagrees with the gold answer.
+  0 = wrong or off-topic. The predicted answer does not address the
+      question, or is the no-info fallback when the gold expects content,
+      or contains exclusively incorrect claims.
+
+Special case: if the gold answer is "I don't have information about that
+in the indexed corpus." (negative control), then:
+  4 = predicted answer is the no-info fallback or says "I don't know" /
+      "no information" / "not in the corpus" or similar.
+  0 = predicted answer fabricates an answer.
+
+Return ONLY the integer score (0, 1, 2, 3, or 4). No prose, no explanation,
+no markdown.
 
 QUESTION: {{ question }}
 
