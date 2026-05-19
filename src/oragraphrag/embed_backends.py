@@ -51,7 +51,7 @@ class OllamaEmbedBackend:
         for i, t in enumerate(texts):
             resp = await self._http.post(
                 url,
-                json={"model": self.cfg.llm.ollama.model, "prompt": t},
+                json={"model": self.cfg.embeddings.ollama.model, "prompt": t},
                 timeout=self._timeout_s,
             )
             resp.raise_for_status()

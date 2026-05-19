@@ -47,25 +47,17 @@ def init_db_cmd(
 
     cfg = _load_config(config)
 
+    from oragraphrag.embed_backends import build_embed_backend
+
     async def _go() -> None:
-        # Use a no-network stub embedder for axis-vector seeding so init-db
-        # doesn't require a live LLM/embedding endpoint. The real axis
-        # vectors are recomputed after Task 13 lands real embedding backends;
-        # zero-vectors are placeholder, deliberately written so a downstream
-        # `oragraphrag query` can detect un-initialized axes.
-        import numpy as np
-
-        class _ZeroEmbedder:
-            dim = cfg.embeddings.dim
-
-            async def embed(self, texts: list[str]) -> np.ndarray:
-                return np.zeros((len(texts), cfg.embeddings.dim), dtype=np.float32)
-
-        emb = Embedder(cfg, backend=_ZeroEmbedder())
-        axes = await build_axis_vectors(emb)
         store = GraphStore(cfg)
         store.connect()
         try:
+            # Use the real configured embedder so axis vectors are meaningful.
+            # Task 9's reweighting depends on these being real embeddings of
+            # the canonical axis descriptions, not zero vectors.
+            emb = Embedder(cfg, backend=build_embed_backend(cfg, store))
+            axes = await build_axis_vectors(emb)
             store.init_db(
                 rebuild=rebuild,
                 axis_vectors={k: v.tolist() for k, v in axes.items()},

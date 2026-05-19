@@ -25,6 +25,7 @@ import oracledb
 from oragraphrag.config import Config
 from oragraphrag.extract import ExtractionError
 from oragraphrag.ingest import Buffer
+from oragraphrag.llm import LLMError
 
 _FAILURE_LOG_PATH = Path("logs") / "extract-failures.jsonl"
 
@@ -62,7 +63,7 @@ class IngestPipeline:
             async with sem:
                 try:
                     await self._process_one(buf, stats)
-                except (ExtractionError, oracledb.DatabaseError) as e:
+                except (ExtractionError, LLMError, oracledb.DatabaseError) as e:
                     stats["failed"] += 1
                     self._log_failure(buf, e)
                     # Continue — one bad buffer must not abort the whole ingest.

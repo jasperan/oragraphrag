@@ -16,6 +16,8 @@ embeddings:
   provider: oracle
   oracle:
     model: ALL_MINILM_L12_V2
+  ollama:
+    model: nomic-embed-text
   dim: 384
 
 oracle:

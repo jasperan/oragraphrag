@@ -35,9 +35,16 @@ class OracleEmbedConfig(BaseModel):
     model: str = "ALL_MINILM_L12_V2"
 
 
+class OllamaEmbedConfig(BaseModel):
+    """Ollama embedding-specific model, distinct from the chat model in LlmConfig."""
+
+    model: str = "nomic-embed-text"
+
+
 class EmbeddingsConfig(BaseModel):
     provider: Literal["oracle", "ollama", "sentence_transformers"] = "oracle"
     oracle: OracleEmbedConfig = Field(default_factory=OracleEmbedConfig)
+    ollama: OllamaEmbedConfig = Field(default_factory=OllamaEmbedConfig)
     dim: int = 384
 
 

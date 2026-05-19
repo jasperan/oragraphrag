@@ -33,6 +33,16 @@ class Embedder:
                 f"run `oragraphrag init-db --rebuild`"
             )
 
+    @property
+    def dim(self) -> int:
+        """Mirror the backend's dim so Embedder satisfies the _EmbedBackend Protocol.
+
+        build_axis_vectors() accepts either a raw backend or a full Embedder
+        and reads .dim; without this property, passing an Embedder raises
+        AttributeError.
+        """
+        return self.cfg.embeddings.dim
+
     async def embed(self, texts: Iterable[str], *, normalize: bool = True) -> np.ndarray:
         text_list = list(texts)
         if not text_list:
