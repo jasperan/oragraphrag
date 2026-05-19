@@ -62,7 +62,7 @@ class MemoryLayer:
         store = OracleDBMemoryStore(
             embedder=None,
             pool=pool,
-            schema_policy=SchemaPolicy.AUTO_CREATE,
+            schema_policy=SchemaPolicy.CREATE_IF_NECESSARY,
             vector_dim=self.cfg.embeddings.dim,
             table_name_prefix="ORAGRAPH_MEM_",
         )
@@ -77,6 +77,7 @@ class MemoryLayer:
                 thread_id=source_id,
                 agent_id="oragraphrag",
                 metadata={"folder": folder},
+                extract_memories=False,
             )
         except Exception:
             # Thread already exists; fetch it.

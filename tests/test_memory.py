@@ -88,7 +88,7 @@ def test_memory_layer_lazy_import_wires_pool(monkeypatch):
             self.store = store
 
     class FakeSchemaPolicy:
-        AUTO_CREATE = "auto-create"
+        CREATE_IF_NECESSARY = "create_if_necessary"
 
     # Build the stub oracleagentmemory package on the fly so the lazy
     # import inside _mem_lazy() resolves to our stand-ins without
@@ -112,7 +112,7 @@ def test_memory_layer_lazy_import_wires_pool(monkeypatch):
     # OracleDBMemoryStore was constructed with our pool + dim.
     assert captured["pool"] == "fake-pool"
     assert captured["vector_dim"] == cfg.embeddings.dim
-    assert captured["schema_policy"] == FakeSchemaPolicy.AUTO_CREATE
+    assert captured["schema_policy"] == FakeSchemaPolicy.CREATE_IF_NECESSARY
     assert captured["table_name_prefix"] == "ORAGRAPH_MEM_"
     assert captured["embedder"] is None
 
@@ -140,7 +140,7 @@ def test_memory_layer_lazy_import_connects_if_needed(monkeypatch):
             self.store = store
 
     class FakeSchemaPolicy:
-        AUTO_CREATE = "auto-create"
+        CREATE_IF_NECESSARY = "create_if_necessary"
 
     pkg = types.ModuleType("oracleagentmemory")
     core_mod = types.ModuleType("oracleagentmemory.core")
@@ -177,10 +177,11 @@ def test_register_source_creates_thread(monkeypatch):
         def __init__(self, *, store):
             pass
 
-        def create_thread(self, *, thread_id, agent_id, metadata):
+        def create_thread(self, *, thread_id, agent_id, metadata, **kwargs):
             created["thread_id"] = thread_id
             created["agent_id"] = agent_id
             created["metadata"] = metadata
+            created["kwargs"] = kwargs
             return FakeThread(thread_id)
 
         def get_thread(self, tid):  # pragma: no cover — not called here
@@ -191,7 +192,7 @@ def test_register_source_creates_thread(monkeypatch):
             pass
 
     class FakeSchemaPolicy:
-        AUTO_CREATE = "auto-create"
+        CREATE_IF_NECESSARY = "create_if_necessary"
 
     pkg = types.ModuleType("oracleagentmemory")
     core_mod = types.ModuleType("oracleagentmemory.core")
@@ -212,6 +213,7 @@ def test_register_source_creates_thread(monkeypatch):
         "thread_id": "src_test_id",
         "agent_id": "oragraphrag",
         "metadata": {"folder": "/some/folder"},
+        "kwargs": {"extract_memories": False},
     }
 
 
@@ -241,7 +243,7 @@ def test_register_source_falls_back_to_get_thread(monkeypatch):
             pass
 
     class FakeSchemaPolicy:
-        AUTO_CREATE = "auto-create"
+        CREATE_IF_NECESSARY = "create_if_necessary"
 
     pkg = types.ModuleType("oracleagentmemory")
     core_mod = types.ModuleType("oracleagentmemory.core")

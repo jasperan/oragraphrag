@@ -57,7 +57,9 @@ def test_bench_command_fails_gracefully_on_missing_suite():
         app, ["bench", "--suite", "nope.jsonl", "--systems", "oragraphrag"]
     )
     assert result.exit_code != 0
-    combined = result.stdout + (result.stderr if result.stderr else "")
+    # typer 0.23+: stderr is not separately captured unless mix_stderr=False
+    # at the CliRunner level. result.output combines them.
+    combined = result.output
     # The contract: the user must see WHY it didn't run.
     assert "not found" in combined.lower() or "nope.jsonl" in combined.lower()
     # Definitely not a Python-level traceback or KeyError leakage.
