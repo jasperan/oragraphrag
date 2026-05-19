@@ -1,0 +1,53 @@
+# DRAFT: LightRAG binding to our LLM + embedding backends.
+#
+# This file is intentionally not imported anywhere — it's checked in as a
+# reference for binding LightRAG's `llm_model_func` and `embedding_func`
+# slots to `oragraphrag.llm.LLM` and `oragraphrag.embed` so the bench
+# runs the same models across all baselines.
+#
+# The default `lightrag.py` wires LightRAG with its built-in defaults
+# (OpenAI). Use this draft when you want strict apples-to-apples model
+# parity in the bench.
+
+"""LightRAG baseline — bound to oragraphrag LLM + embedding (draft)."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from oragraphrag.config import Config
+
+WORKING_DIR = Path("benchmarks/configs/lightrag/work")
+
+
+async def run(question: str, cfg: Config) -> dict:
+    from lightrag import LightRAG, QueryParam
+
+    from oragraphrag.embed import get_embedder
+    from oragraphrag.llm import LLM
+
+    async with LLM(cfg) as llm:
+        async def llm_model_func(prompt: str, **kwargs) -> str:
+            # Adapt our async LLM.chat to LightRAG's prompt-in-string-out shape.
+            return await llm.chat(prompt)
+
+        embedder = get_embedder(cfg)
+
+        async def embedding_func(texts: list[str]):
+            return [embedder.embed(t) for t in texts]
+
+        rag = LightRAG(
+            working_dir=str(WORKING_DIR),
+            llm_model_func=llm_model_func,
+            embedding_func=embedding_func,
+        )
+        result = await rag.aquery(
+            question, param=QueryParam(mode="hybrid", top_k=10)
+        )
+
+    return {
+        "answer": str(result),
+        "citations": [],
+        "tokens": 0,
+        "latency_ms": 0.0,
+    }

@@ -1,0 +1,60 @@
+# DRAFT: full GraphRAG LocalSearch wiring.
+#
+# This file is intentionally not imported anywhere — it's checked in as a
+# reference for the bench operator who runs `python -m graphrag.index --root
+# benchmarks/configs/graphrag` and then wants to wire the query side.
+#
+# Once the indexer artifacts exist AND a model adapter is in place, port
+# the body of `run()` into `graphrag.py` (replacing the NotImplementedError
+# block after the FileNotFoundError check) and add the appropriate
+# LocalContextBuilder construction.
+
+"""Microsoft GraphRAG baseline — full LocalSearch path (draft)."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from oragraphrag.config import Config
+
+ARTIFACTS_ROOT = Path("benchmarks/configs/graphrag/output")
+
+
+async def run(question: str, cfg: Config) -> dict:
+    import pandas as pd
+    from graphrag.query.indexer_adapters import (
+        read_indexer_entities,
+        read_indexer_reports,
+    )
+    from graphrag.query.structured_search.local_search.search import LocalSearch
+
+    entities_df = pd.read_parquet(ARTIFACTS_ROOT / "entities.parquet")
+    communities_df = pd.read_parquet(ARTIFACTS_ROOT / "communities.parquet")
+    reports_df = pd.read_parquet(ARTIFACTS_ROOT / "community_reports.parquet")
+
+    entities = read_indexer_entities(entities_df, communities_df, community_level=2)
+    reports = read_indexer_reports(reports_df, communities_df, community_level=2)
+
+    # TODO(operator): build a LocalContextBuilder backed by the artifacts'
+    # embedding store (lancedb by default, or your Oracle 23ai vector store
+    # via a custom adapter). The builder receives entities, reports, the
+    # text_units parquet, and a vector-search callable for entity matching.
+    context_builder = ...  # type: ignore[assignment]
+
+    # TODO(operator): adapt our `oragraphrag.llm.LLM` to graphrag's
+    # `LLMCompletion` protocol (chat-style API with `acompletion(...)`).
+    model = ...  # type: ignore[assignment]
+
+    searcher = LocalSearch(
+        model=model,
+        context_builder=context_builder,
+        tokenizer=None,
+        response_type="multiple paragraphs",
+    )
+    result = await searcher.search(question)
+    return {
+        "answer": getattr(result, "response", str(result)),
+        "citations": [],  # GraphRAG response shape doesn't expose structured citations.
+        "tokens": getattr(result, "prompt_tokens", 0),
+        "latency_ms": 0.0,
+    }

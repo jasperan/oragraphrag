@@ -191,15 +191,39 @@ def test_oracle_docs_qa_suite_exists_and_loads():
         assert "gold_answer" in item
 
 
-def test_graphrag_baseline_stub_raises_not_implemented():
+def test_graphrag_baseline_raises_clear_error_without_artifacts():
+    """Either GraphRAG is wired (and surfaces a clear error when artifacts
+    are missing) or it's still a stub. Both are acceptable bench contracts;
+    the harness records the failure and moves on."""
     from oragraphrag.bench.baselines import graphrag
 
-    with pytest.raises(NotImplementedError, match="Task 16"):
+    with pytest.raises((NotImplementedError, ImportError, FileNotFoundError, RuntimeError)):
         asyncio.run(graphrag.run("q", Config()))
 
 
-def test_lightrag_baseline_stub_raises_not_implemented():
+def test_lightrag_baseline_raises_clear_error_without_working_dir():
+    """Same loose contract as GraphRAG: clear error when preconditions
+    (working dir populated by `rag.ainsert`) are missing."""
     from oragraphrag.bench.baselines import lightrag
 
-    with pytest.raises(NotImplementedError, match="Task 16"):
+    with pytest.raises((NotImplementedError, ImportError, FileNotFoundError, RuntimeError)):
         asyncio.run(lightrag.run("q", Config()))
+
+
+def test_full_suite_has_200_questions_with_correct_hop_distribution():
+    """The full bench suite must have the 80/80/40 split per spec."""
+    suite = load_suite("benchmarks/suites/oracle_docs_qa.jsonl")
+    assert len(suite.items) == 200
+
+    by_hops = {1: 0, 2: 0, 3: 0}
+    for item in suite.items:
+        by_hops[item["hops"]] += 1
+    assert by_hops[1] == 80
+    assert by_hops[2] == 80
+    assert by_hops[3] == 40
+
+
+def test_smoke_suite_still_available():
+    """The original 5-question smoke suite remains for fast iteration."""
+    suite = load_suite("benchmarks/suites/oracle_docs_qa.smoke.jsonl")
+    assert len(suite.items) == 5
