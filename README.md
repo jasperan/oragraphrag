@@ -83,9 +83,13 @@ pytest -m oracle
 pytest -m "oracle and llm"
 ```
 
+## Claude Code integration
+
+The project ships with a `/graphify` slash command for Claude Code. Type `/graphify` in any Claude Code session to ingest the current working directory into the shared OraGraphRAG Oracle 23ai graph. See `.claude/skills/graphify/README.md` for operator setup and configuration.
+
 ## Status
 
-Tasks 1-18 of the implementation plan complete. See
+Tasks 1-21 of the implementation plan complete. See
 `docs/superpowers/plans/2026-05-18-oragraphrag.md` for the per-task
 breakdown.
 
