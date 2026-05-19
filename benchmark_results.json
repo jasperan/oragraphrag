@@ -1,0 +1,205 @@
+{
+  "suite": "benchmarks/suites/oracle_docs_qa.jsonl",
+  "systems": {
+    "naive_rag": {
+      "n": 10,
+      "median_correctness": 1.0,
+      "median_latency_ms": 2857.351555954665,
+      "median_tokens": 194.5,
+      "median_citation_precision": 0.18333333333333335,
+      "median_citation_recall": 1.0,
+      "per_question": [
+        {
+          "id": "q001",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 3001.686287112534,
+          "tokens": 178
+        },
+        {
+          "id": "q002",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 3138.849460054189,
+          "tokens": 225
+        },
+        {
+          "id": "q003",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 2741.838115034625,
+          "tokens": 193
+        },
+        {
+          "id": "q004",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 2972.864996874705,
+          "tokens": 184
+        },
+        {
+          "id": "q005",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 2319.350929930806,
+          "tokens": 197
+        },
+        {
+          "id": "q006",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2510.738085024059,
+          "tokens": 187
+        },
+        {
+          "id": "q007",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 2227.9752818867564,
+          "tokens": 213
+        },
+        {
+          "id": "q008",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 0.1111111111111111,
+          "citation_recall": 1.0,
+          "latency_ms": 3948.8481930457056,
+          "tokens": 209
+        },
+        {
+          "id": "q009",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2240.0658088736236,
+          "tokens": 196
+        },
+        {
+          "id": "q010",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 3514.785936102271,
+          "tokens": 186
+        }
+      ]
+    },
+    "oragraphrag": {
+      "n": 10,
+      "median_correctness": 1.0,
+      "median_latency_ms": 2184.316224534996,
+      "median_tokens": 10.0,
+      "median_citation_precision": 1.0,
+      "median_citation_recall": 0.5,
+      "per_question": [
+        {
+          "id": "q001",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2981.773644918576,
+          "tokens": 8
+        },
+        {
+          "id": "q002",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2046.4675188995898,
+          "tokens": 12
+        },
+        {
+          "id": "q003",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2183.5545289795846,
+          "tokens": 10
+        },
+        {
+          "id": "q004",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2000.7167188450694,
+          "tokens": 10
+        },
+        {
+          "id": "q005",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2375.689512817189,
+          "tokens": 10
+        },
+        {
+          "id": "q006",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 2950.5145649891347,
+          "tokens": 32
+        },
+        {
+          "id": "q007",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2185.077920090407,
+          "tokens": 10
+        },
+        {
+          "id": "q008",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 5508.860379923135,
+          "tokens": 13
+        },
+        {
+          "id": "q009",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1887.4961601104587,
+          "tokens": 10
+        },
+        {
+          "id": "q010",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2137.590670026839,
+          "tokens": 2
+        }
+      ]
+    }
+  }
+}
