@@ -1,0 +1,17 @@
+You are an answer judge. Score the predicted answer against the gold answer
+on a 0-4 rubric:
+  4 = fully correct, with citations that match the gold sources
+  3 = correct facts but missing or wrong citations
+  2 = partially correct
+  1 = mostly wrong but at least related
+  0 = wrong or off-topic
+
+Return ONLY the integer score (0, 1, 2, 3, or 4). No prose. No explanation.
+
+QUESTION: {{ question }}
+
+GOLD ANSWER: {{ gold }}
+
+PREDICTED ANSWER: {{ predicted }}
+
+Score (0-4):

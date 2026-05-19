@@ -51,20 +51,15 @@ def test_bench_help_shows_suite_and_systems_options():
     assert "--systems" in out
 
 
-def test_bench_command_prints_friendly_not_implemented_message():
-    """Until Task 15 lands the bench harness, the CLI command should
-    fail gracefully rather than crash on import."""
+def test_bench_command_fails_gracefully_on_missing_suite():
+    """A missing --suite path must produce a clear error, not a traceback."""
     result = runner.invoke(
         app, ["bench", "--suite", "nope.jsonl", "--systems", "oragraphrag"]
     )
-    # Either exit 0 with a message OR exit 1 with a clear stderr message.
-    # The contract: the user must see WHY it didn't run, not a stack trace.
+    assert result.exit_code != 0
     combined = result.stdout + (result.stderr if result.stderr else "")
-    assert (
-        "not implemented" in combined.lower()
-        or "task 15" in combined.lower()
-        or "bench" in combined.lower()
-    )
+    # The contract: the user must see WHY it didn't run.
+    assert "not found" in combined.lower() or "nope.jsonl" in combined.lower()
     # Definitely not a Python-level traceback or KeyError leakage.
     assert "traceback" not in combined.lower()
 

@@ -219,6 +219,9 @@ def bench_cmd(
 
     cfg = _load_config(config)
     systems_list = [s.strip() for s in systems.split(",") if s.strip()]
+    if not Path(suite).exists():
+        console.print(f"[red]bench suite not found: {suite}[/red]")
+        raise typer.Exit(1)
     result = asyncio.run(
         run_suite(cfg, suite=suite, systems=systems_list, limit=limit)
     )

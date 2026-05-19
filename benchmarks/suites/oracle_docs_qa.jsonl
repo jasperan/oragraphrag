@@ -1,0 +1,5 @@
+{"id":"q1","question":"What does the VECTOR datatype store?","gold_answer":"It stores fixed-length numeric vectors used for AI Vector Search.","gold_doc_ids":["concepts.md#Vectors"],"hops":1}
+{"id":"q2","question":"What is HNSW used for?","gold_answer":"HNSW is an approximate nearest-neighbor index for VECTOR columns.","gold_doc_ids":["concepts.md#Indexes"],"hops":1}
+{"id":"q3","question":"Which 23ai feature enables ANN search?","gold_answer":"AI Vector Search via the VECTOR datatype and HNSW or IVF indexes.","gold_doc_ids":["concepts.md#Vectors","concepts.md#Indexes"],"hops":2}
+{"id":"q4","question":"Which package exposes vector PL/SQL APIs?","gold_answer":"DBMS_VECTOR.","gold_doc_ids":["plsql.md#DBMS_VECTOR"],"hops":1}
+{"id":"q5","question":"Which 23ai version introduced property graphs in SQL?","gold_answer":"Oracle Database 23ai.","gold_doc_ids":["concepts.md#PropertyGraphs"],"hops":1}
