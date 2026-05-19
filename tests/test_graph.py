@@ -136,3 +136,85 @@ def test_ledger_add_and_check(store):
     # Idempotent: second add does not raise.
     store.ledger_add("abc123", doc_id="d.md", section_path="s")
     assert store.ledger_has("abc123")
+
+
+def test_upsert_with_source_id(store):
+    """The new source_id column is populated on all three writers."""
+    store.init_db(rebuild=True, axis_vectors=_zero_axis_vectors())
+    sid = "src_test_aaa"
+    e1 = store.upsert_entity(name="se1", kind="x", embedding=[0.1] * 384, source_id=sid)
+    e2 = store.upsert_entity(name="se2", kind="x", embedding=[0.2] * 384, source_id=sid)
+    p = store.upsert_proposition(
+        text="t", source_doc="d", source_span="s",
+        embedding=[0.3] * 384, source_id=sid,
+    )
+    store.upsert_rel(
+        e1, e2, predicate="r", ontology_axis="causal",
+        base_weight=0.5, support_prop_id=p, source_id=sid,
+    )
+
+    with store._conn() as c, c.cursor() as cur:
+        cur.execute("SELECT source_id FROM Entity WHERE id = :id", id=e1)
+        assert cur.fetchone()[0] == sid
+        cur.execute("SELECT source_id FROM Proposition WHERE id = :id", id=p)
+        assert cur.fetchone()[0] == sid
+        cur.execute(
+            "SELECT source_id FROM Rel WHERE src_id = :s AND dst_id = :d "
+            "AND predicate = :p",
+            s=e1, d=e2, p="r",
+        )
+        assert cur.fetchone()[0] == sid
+
+
+def test_vector_search_filters_by_source(store):
+    """vector_search_* must scope to the requested source_id when supplied."""
+    store.init_db(rebuild=True, axis_vectors=_zero_axis_vectors())
+    sid_a = "src_aaa"
+    sid_b = "src_bbb"
+    e_a = store.upsert_entity(
+        name="alpha entity", kind="x", embedding=[0.5] * 384, source_id=sid_a
+    )
+    e_b = store.upsert_entity(
+        name="beta entity", kind="x", embedding=[0.5] * 384, source_id=sid_b
+    )
+    p_a = store.upsert_proposition(
+        text="from a", source_doc="da", source_span="0",
+        embedding=[0.5] * 384, source_id=sid_a,
+    )
+    p_b = store.upsert_proposition(
+        text="from b", source_doc="db", source_span="0",
+        embedding=[0.5] * 384, source_id=sid_b,
+    )
+
+    # Unfiltered: both surface.
+    ent_rows = store.vector_search_entities(query_vec=[0.5] * 384, k=10)
+    ent_ids = {r["id"] for r in ent_rows}
+    assert e_a in ent_ids and e_b in ent_ids
+
+    # Filtered to sid_a only: only the a-entity surfaces.
+    ent_rows_a = store.vector_search_entities(
+        query_vec=[0.5] * 384, k=10, source_filter=sid_a
+    )
+    ent_ids_a = {r["id"] for r in ent_rows_a}
+    assert e_a in ent_ids_a
+    assert e_b not in ent_ids_a
+
+    # Same for propositions.
+    prop_rows_b = store.vector_search_propositions(
+        query_vec=[0.5] * 384, k=10, source_filter=sid_b
+    )
+    prop_ids_b = {r["id"] for r in prop_rows_b}
+    assert p_b in prop_ids_b
+    assert p_a not in prop_ids_b
+
+
+def test_list_sources(store):
+    """list_sources returns the distinct set of source_ids on Entity."""
+    store.init_db(rebuild=True, axis_vectors=_zero_axis_vectors())
+    store.upsert_entity(name="ls_a", kind="x", embedding=[0.1] * 384, source_id="src_one")
+    store.upsert_entity(name="ls_b", kind="x", embedding=[0.2] * 384, source_id="src_one")
+    store.upsert_entity(name="ls_c", kind="x", embedding=[0.3] * 384, source_id="src_two")
+    store.upsert_entity(name="ls_d", kind="x", embedding=[0.4] * 384)  # default
+
+    sources = set(store.list_sources())
+    assert {"src_one", "src_two", "default"} <= sources

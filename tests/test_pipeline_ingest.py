@@ -48,17 +48,31 @@ class _SpyGraph:
         self.rels: list[tuple] = []
         self.ledger: set[str] = set()
 
-    def upsert_entity(self, *, name, kind, embedding):
+    def upsert_entity(self, *, name, kind, embedding, source_id="default"):
         eid = self.entities.setdefault(name, f"E{len(self.entities)}".encode())
         return eid
 
-    def upsert_proposition(self, *, text, source_doc, source_span, embedding):
+    def upsert_proposition(
+        self, *, text, source_doc, source_span, embedding, source_id="default"
+    ):
         pid = f"P{len(self.props)}".encode()
         self.props.append(pid)
         return pid
 
-    def upsert_rel(self, src, dst, *, predicate, ontology_axis, base_weight, support_prop_id):
-        self.rels.append((src, dst, predicate, ontology_axis, base_weight, support_prop_id))
+    def upsert_rel(
+        self,
+        src,
+        dst,
+        *,
+        predicate,
+        ontology_axis,
+        base_weight,
+        support_prop_id,
+        source_id="default",
+    ):
+        self.rels.append(
+            (src, dst, predicate, ontology_axis, base_weight, support_prop_id, source_id)
+        )
 
     def ledger_has(self, h):
         return h in self.ledger

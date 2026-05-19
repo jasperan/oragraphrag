@@ -89,6 +89,9 @@ class GraphStore:
                         "DROP INDEX entity_emb_hnsw_ix",
                         "DROP INDEX prop_emb_hnsw_ix",
                         "DROP INDEX entity_name_uq",
+                        "DROP INDEX entity_source_ix",
+                        "DROP INDEX prop_source_ix",
+                        "DROP INDEX rel_source_ix",
                         "DROP PROPERTY GRAPH oragraph",
                         "DROP TABLE Mentions PURGE",
                         "DROP TABLE Rel PURGE",
@@ -164,7 +167,14 @@ class GraphStore:
 
     # ---------- Entity ops ----------
 
-    def upsert_entity(self, *, name: str, kind: str, embedding: list[float]) -> bytes:
+    def upsert_entity(
+        self,
+        *,
+        name: str,
+        kind: str,
+        embedding: list[float],
+        source_id: str = "default",
+    ) -> bytes:
         with self._conn() as c, c.cursor() as cur:
             try:
                 cur.execute(
@@ -175,18 +185,20 @@ class GraphStore:
                     eid = row[0]
                     cur.execute(
                         "UPDATE Entity SET mention_count = mention_count + 1, "
-                        "embedding = :v WHERE id = :id",
+                        "embedding = :v, source_id = :sid WHERE id = :id",
                         v=_vec(embedding),
+                        sid=source_id,
                         id=eid,
                     )
                 else:
                     out_id = cur.var(oracledb.DB_TYPE_RAW)
                     cur.execute(
-                        "INSERT INTO Entity (name, kind, embedding) "
-                        "VALUES (:n, :k, :v) RETURNING id INTO :id",
+                        "INSERT INTO Entity (name, kind, embedding, source_id) "
+                        "VALUES (:n, :k, :v, :sid) RETURNING id INTO :id",
                         n=name,
                         k=kind,
                         v=_vec(embedding),
+                        sid=source_id,
                         id=out_id,
                     )
                     eid = out_id.getvalue()[0]
@@ -197,18 +209,25 @@ class GraphStore:
                 raise
 
     def upsert_proposition(
-        self, *, text: str, source_doc: str, source_span: str, embedding: list[float]
+        self,
+        *,
+        text: str,
+        source_doc: str,
+        source_span: str,
+        embedding: list[float],
+        source_id: str = "default",
     ) -> bytes:
         with self._conn() as c, c.cursor() as cur:
             try:
                 out_id = cur.var(oracledb.DB_TYPE_RAW)
                 cur.execute(
-                    "INSERT INTO Proposition (text, source_doc, source_span, embedding) "
-                    "VALUES (:t, :d, :s, :v) RETURNING id INTO :id",
+                    "INSERT INTO Proposition (text, source_doc, source_span, embedding, source_id) "
+                    "VALUES (:t, :d, :s, :v, :sid) RETURNING id INTO :id",
                     t=text,
                     d=source_doc,
                     s=source_span,
                     v=_vec(embedding),
+                    sid=source_id,
                     id=out_id,
                 )
                 c.commit()
@@ -232,6 +251,7 @@ class GraphStore:
         ontology_axis: str,
         base_weight: float,
         support_prop_id: bytes,
+        source_id: str = "default",
     ) -> None:
         """Insert or update a REL row keyed on (src_id, dst_id, predicate).
 
@@ -277,10 +297,10 @@ class GraphStore:
                         """
                         INSERT INTO Rel (
                             src_id, dst_id, predicate, ontology_axis, base_weight,
-                            support_propositions, support_axis_counts
+                            support_propositions, support_axis_counts, source_id
                         ) VALUES (
                             :s, :d, :p, :a, :bw,
-                            :props, :counts
+                            :props, :counts, :sid
                         )
                         """,
                         s=src_id,
@@ -290,6 +310,7 @@ class GraphStore:
                         bw=base_weight,
                         props=json.dumps([sp_hex]),
                         counts=json.dumps({ontology_axis: 1}),
+                        sid=source_id,
                     )
                 else:
                     _, old_bw, old_props_lob, old_counts_lob, _old_axis = row
@@ -325,6 +346,7 @@ class GraphStore:
                             ontology_axis = :a,
                             support_propositions = :props,
                             support_axis_counts = :counts,
+                            source_id = :sid,
                             last_seen_at = SYSTIMESTAMP
                         WHERE src_id = :s AND dst_id = :d AND predicate = :p
                         """,
@@ -332,6 +354,7 @@ class GraphStore:
                         a=best_axis,
                         props=json.dumps(support_props),
                         counts=json.dumps({k: int(v) for k, v in axis_counts.items()}),
+                        sid=source_id,
                         s=src_id,
                         d=dst_id,
                         p=predicate,
@@ -362,31 +385,68 @@ class GraphStore:
 
     # ---------- Reads ----------
 
-    def vector_search_entities(self, *, query_vec: list[float], k: int) -> list[dict]:
+    def vector_search_entities(
+        self,
+        *,
+        query_vec: list[float],
+        k: int,
+        source_filter: str | None = None,
+    ) -> list[dict]:
         with self._conn() as c, c.cursor() as cur:
-            cur.execute(
-                """
-                SELECT id, name, VECTOR_DISTANCE(embedding, :q, COSINE) AS d
-                FROM Entity ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
-                """,
-                q=_vec(query_vec),
-                k=k,
-            )
+            if source_filter is None:
+                cur.execute(
+                    """
+                    SELECT id, name, VECTOR_DISTANCE(embedding, :q, COSINE) AS d
+                    FROM Entity ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
+                    """,
+                    q=_vec(query_vec),
+                    k=k,
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT id, name, VECTOR_DISTANCE(embedding, :q, COSINE) AS d
+                    FROM Entity WHERE source_id = :sid
+                    ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
+                    """,
+                    q=_vec(query_vec),
+                    sid=source_filter,
+                    k=k,
+                )
             return [
                 {"id": r[0], "name": r[1], "distance": float(r[2])} for r in cur.fetchall()
             ]
 
-    def vector_search_propositions(self, *, query_vec: list[float], k: int) -> list[dict]:
+    def vector_search_propositions(
+        self,
+        *,
+        query_vec: list[float],
+        k: int,
+        source_filter: str | None = None,
+    ) -> list[dict]:
         with self._conn() as c, c.cursor() as cur:
-            cur.execute(
-                """
-                SELECT id, source_doc, source_span,
-                       VECTOR_DISTANCE(embedding, :q, COSINE) AS d
-                FROM Proposition ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
-                """,
-                q=_vec(query_vec),
-                k=k,
-            )
+            if source_filter is None:
+                cur.execute(
+                    """
+                    SELECT id, source_doc, source_span,
+                           VECTOR_DISTANCE(embedding, :q, COSINE) AS d
+                    FROM Proposition ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
+                    """,
+                    q=_vec(query_vec),
+                    k=k,
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT id, source_doc, source_span,
+                           VECTOR_DISTANCE(embedding, :q, COSINE) AS d
+                    FROM Proposition WHERE source_id = :sid
+                    ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
+                    """,
+                    q=_vec(query_vec),
+                    sid=source_filter,
+                    k=k,
+                )
             return [
                 {
                     "id": r[0],
@@ -397,7 +457,19 @@ class GraphStore:
                 for r in cur.fetchall()
             ]
 
-    def pgql_subgraph(self, *, seed_ids: list[bytes], max_edges: int) -> list[dict]:
+    def list_sources(self) -> list[str]:
+        """Return the distinct list of source_ids currently in Entity."""
+        with self._conn() as c, c.cursor() as cur:
+            cur.execute("SELECT DISTINCT source_id FROM Entity ORDER BY source_id")
+            return [r[0] for r in cur.fetchall() if r[0] is not None]
+
+    def pgql_subgraph(
+        self,
+        *,
+        seed_ids: list[bytes],
+        max_edges: int,
+        source_filter: str | None = None,
+    ) -> list[dict]:
         """Return REL edges within one hop of any seed (i.e. seeds as either endpoint).
 
         Implementation notes:
@@ -407,6 +479,9 @@ class GraphStore:
           plain bytes.
         - The :max_edges placeholder must be padded out as :m and bound separately
           because of the bind-parameter ordering rules around `FETCH FIRST`.
+        - `source_filter`, when provided, is applied inside the MATCH WHERE on
+          the edge's `source_id` property — GRAPH_TABLE doesn't allow a
+          trailing WHERE on table columns, so the filter has to live inline.
         """
         if not seed_ids:
             return []
@@ -415,13 +490,17 @@ class GraphStore:
         placeholders = ", ".join(f":s{i}" for i in range(len(seed_ids)))
         bind = {f"s{i}": sid for i, sid in enumerate(seed_ids)}
         bind["m"] = max_edges
+        source_clause = ""
+        if source_filter is not None:
+            source_clause = " AND r.source_id = :sid"
+            bind["sid"] = source_filter
         sql = f"""
             SELECT e1_id, e2_id, predicate, ontology_axis, base_weight,
                    support_propositions
             FROM GRAPH_TABLE (oragraph
               MATCH (e1) -[r IS REL]-> (e2)
-              WHERE e1.id IN ({placeholders})
-                 OR e2.id IN ({placeholders})
+              WHERE (e1.id IN ({placeholders})
+                 OR e2.id IN ({placeholders})){source_clause}
               COLUMNS (e1.id AS e1_id, e2.id AS e2_id,
                        r.predicate AS predicate,
                        r.ontology_axis AS ontology_axis,
@@ -474,15 +553,24 @@ class GraphStore:
                 c.rollback()
                 raise
 
-    def fetch_propositions(self, ids: Iterable[bytes]) -> list[dict]:
+    def fetch_propositions(
+        self,
+        ids: Iterable[bytes],
+        *,
+        source_filter: str | None = None,
+    ) -> list[dict]:
         ids = list(ids)
         if not ids:
             return []
         placeholders = ", ".join(f":i{i}" for i in range(len(ids)))
-        bind = {f"i{i}": v for i, v in enumerate(ids)}
+        bind: dict[str, object] = {f"i{i}": v for i, v in enumerate(ids)}
+        where = f"id IN ({placeholders})"
+        if source_filter is not None:
+            where += " AND source_id = :sid"
+            bind["sid"] = source_filter
         sql = (
             "SELECT id, text, source_doc, source_span FROM Proposition "
-            f"WHERE id IN ({placeholders})"
+            f"WHERE {where}"
         )
         with self._conn() as c, c.cursor() as cur:
             cur.execute(sql, **bind)

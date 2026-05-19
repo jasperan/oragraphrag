@@ -83,9 +83,11 @@ def graphify_cmd(
     from oragraphrag.graph import GraphStore
     from oragraphrag.ingest import buffer_spans, walk_folder
     from oragraphrag.llm import LLM
+    from oragraphrag.memory import MemoryLayer, source_id_for_folder
     from oragraphrag.pipeline_ingest import IngestPipeline
 
     cfg = _load_config(config)
+    source_id = source_id_for_folder(folder)
     store = GraphStore(cfg)
     store.connect()
     try:
@@ -116,15 +118,31 @@ def graphify_cmd(
             )
         )
 
+        # Best-effort: register a thread in the oracleagentmemory metadata
+        # index. A failure here (e.g. schema collision, optional dep
+        # mismatch) must not block the ingest itself.
+        try:
+            MemoryLayer(cfg, store).register_source(source_id, str(folder))
+        except Exception as mem_err:  # noqa: BLE001
+            console.print(
+                f"[yellow]MemoryLayer.register_source failed; continuing without "
+                f"metadata index: {mem_err}[/yellow]"
+            )
+
         async def _run_ingest() -> dict:
             async with LLM(cfg) as llm:
                 extractor = Extractor(llm)
                 pipeline = IngestPipeline(
-                    cfg=cfg, graph=store, embedder=emb, extractor=extractor
+                    cfg=cfg,
+                    graph=store,
+                    embedder=emb,
+                    extractor=extractor,
+                    source_id=source_id,
                 )
                 return await pipeline.run(bufs)
 
         stats = asyncio.run(_run_ingest())
+        stats["source_id"] = source_id
         console.print_json(json.dumps(stats))
     finally:
         store.close()
@@ -139,12 +157,28 @@ def query_cmd(
         "--dry-run",
         help="Print what would be queried without touching the DB or LLM.",
     ),
+    source: str | None = typer.Option(  # noqa: B008
+        None,
+        "--source",
+        help=(
+            "Scope retrieval to a single source. Accepts either a folder path "
+            "(hashed via source_id_for_folder) or a literal 'src_<hex>' id."
+        ),
+    ),
 ) -> None:
     """Answer a question from the indexed corpus."""
+    from oragraphrag.memory import source_id_for_folder
+
     cfg = _load_config(config)
+    source_filter: str | None = None
+    if source is not None:
+        source_filter = source if source.startswith("src_") else source_id_for_folder(source)
+
     if dry_run:
         console.print(f"dry run: would query [bold]{question!r}[/bold]")
         console.print(f"config: provider={cfg.llm.provider}, dim={cfg.embeddings.dim}")
+        if source_filter is not None:
+            console.print(f"source_filter: {source_filter}")
         raise typer.Exit(0)
 
     from oragraphrag.embed import Embedder, build_axis_vectors
@@ -175,6 +209,7 @@ def query_cmd(
                     embedder=emb,
                     llm=llm,
                     axis_vectors=axes,
+                    source_filter=source_filter,
                 )
                 result = await pipeline.query(question)
                 console.print(result.answer.text)
@@ -184,6 +219,27 @@ def query_cmd(
                         console.print(f"  - {c.source_doc}#{c.source_span}")
 
         asyncio.run(_run_query())
+    finally:
+        store.close()
+
+
+@app.command("sources")
+def sources_cmd(
+    config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
+) -> None:
+    """List the distinct source_ids currently in the property graph."""
+    from oragraphrag.graph import GraphStore
+
+    cfg = _load_config(config)
+    store = GraphStore(cfg)
+    store.connect()
+    try:
+        ids = store.list_sources()
+        if not ids:
+            console.print("[dim](no sources)[/dim]")
+            return
+        for sid in ids:
+            console.print(sid)
     finally:
         store.close()
 

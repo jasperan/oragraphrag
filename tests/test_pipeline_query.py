@@ -35,20 +35,20 @@ class _StubGraph:
             {"id": b"\xaa", "text": "a causes b", "source_doc": "d", "source_span": "s"}
         ]
 
-    def vector_search_entities(self, *, query_vec, k):
-        self.calls.append(("vse", k))
+    def vector_search_entities(self, *, query_vec, k, source_filter=None):
+        self.calls.append(("vse", k, source_filter))
         return self.seed_entities_result
 
-    def vector_search_propositions(self, *, query_vec, k):
-        self.calls.append(("vsp", k))
+    def vector_search_propositions(self, *, query_vec, k, source_filter=None):
+        self.calls.append(("vsp", k, source_filter))
         return self.seed_props_result
 
-    def pgql_subgraph(self, *, seed_ids, max_edges):
-        self.calls.append(("pgql", list(seed_ids), max_edges))
+    def pgql_subgraph(self, *, seed_ids, max_edges, source_filter=None):
+        self.calls.append(("pgql", list(seed_ids), max_edges, source_filter))
         return self.subgraph_result
 
-    def fetch_propositions(self, ids):
-        self.calls.append(("fp", list(ids)))
+    def fetch_propositions(self, ids, *, source_filter=None):
+        self.calls.append(("fp", list(ids), source_filter))
         return self.props_result
 
 

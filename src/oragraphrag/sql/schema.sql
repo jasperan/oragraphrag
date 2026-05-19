@@ -7,9 +7,11 @@ CREATE TABLE Entity (
   kind       VARCHAR2(64),
   embedding  VECTOR(:dim, FLOAT32),
   mention_count NUMBER DEFAULT 0,
+  source_id  VARCHAR2(64) DEFAULT 'default' NOT NULL,
   created_at TIMESTAMP DEFAULT SYSTIMESTAMP
 );
 CREATE UNIQUE INDEX entity_name_uq ON Entity (LOWER(name));
+CREATE INDEX entity_source_ix ON Entity (source_id);
 
 CREATE TABLE Proposition (
   id           RAW(16) DEFAULT SYS_GUID() PRIMARY KEY,
@@ -17,8 +19,10 @@ CREATE TABLE Proposition (
   source_doc   VARCHAR2(512),
   source_span  VARCHAR2(64),
   embedding    VECTOR(:dim, FLOAT32),
+  source_id    VARCHAR2(64) DEFAULT 'default' NOT NULL,
   created_at   TIMESTAMP DEFAULT SYSTIMESTAMP
 );
+CREATE INDEX prop_source_ix ON Proposition (source_id);
 
 CREATE TABLE Rel (
   id                   RAW(16) DEFAULT SYS_GUID() PRIMARY KEY,
@@ -29,12 +33,14 @@ CREATE TABLE Rel (
   base_weight          NUMBER NOT NULL,
   support_propositions JSON,
   support_axis_counts  JSON,
+  source_id            VARCHAR2(64) DEFAULT 'default' NOT NULL,
   created_at           TIMESTAMP DEFAULT SYSTIMESTAMP,
   last_seen_at         TIMESTAMP DEFAULT SYSTIMESTAMP,
   CONSTRAINT rel_triple_uq UNIQUE (src_id, dst_id, predicate)
 );
 CREATE INDEX rel_axis_ix ON Rel (ontology_axis);
 CREATE INDEX rel_pred_ix ON Rel (predicate);
+CREATE INDEX rel_source_ix ON Rel (source_id);
 
 CREATE TABLE Mentions (
   proposition_id RAW(16) NOT NULL REFERENCES Proposition(id),
@@ -75,7 +81,7 @@ CREATE PROPERTY GRAPH oragraph
       KEY (id)
       SOURCE      KEY (src_id) REFERENCES Entity (id)
       DESTINATION KEY (dst_id) REFERENCES Entity (id)
-      LABEL REL PROPERTIES (predicate, ontology_axis, base_weight, support_propositions),
+      LABEL REL PROPERTIES (predicate, ontology_axis, base_weight, support_propositions, source_id),
     Mentions
       KEY (proposition_id, entity_id, role)
       SOURCE      KEY (proposition_id) REFERENCES Proposition (id)

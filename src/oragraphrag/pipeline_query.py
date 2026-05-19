@@ -41,12 +41,14 @@ class QueryPipeline:
         embedder: Any,
         llm: Any,
         axis_vectors: dict[str, np.ndarray],
+        source_filter: str | None = None,
     ) -> None:
         self.cfg = cfg
         self.graph = graph
         self.embedder = embedder
         self.llm = llm
         self.axis_vectors = axis_vectors
+        self.source_filter = source_filter
         self._answerer = Answerer(llm=llm, token_budget=cfg.answer.token_budget)
 
     async def query(self, question: str) -> QueryResult:
@@ -61,10 +63,12 @@ class QueryPipeline:
         ent_seeds = self.graph.vector_search_entities(
             query_vec=q_list,
             k=self.cfg.retrieval.seed_k_entities,
+            source_filter=self.source_filter,
         )
         prop_seeds = self.graph.vector_search_propositions(
             query_vec=q_list,
             k=self.cfg.retrieval.seed_k_propositions,
+            source_filter=self.source_filter,
         )
         t["seed_ms"] = (time.perf_counter() - t0) * 1000
 
@@ -76,6 +80,7 @@ class QueryPipeline:
         edges = self.graph.pgql_subgraph(
             seed_ids=seed_ids,
             max_edges=self.cfg.retrieval.max_subgraph_edges,
+            source_filter=self.source_filter,
         )
         t["subgraph_ms"] = (time.perf_counter() - t0) * 1000
 
@@ -118,7 +123,11 @@ class QueryPipeline:
                 picked.append(pid)
         # Cap at a sensible limit so the answer prompt stays within budget.
         picked = picked[: self.cfg.retrieval.pagerank.top_m_entities]
-        props = self.graph.fetch_propositions(picked) if picked else []
+        props = (
+            self.graph.fetch_propositions(picked, source_filter=self.source_filter)
+            if picked
+            else []
+        )
 
         t0 = time.perf_counter()
         ans = await self._answerer.answer(question=question, propositions=props)

@@ -35,11 +35,20 @@ logger = logging.getLogger(__name__)
 class IngestPipeline:
     """Runs the extract+embed+upsert pipeline over a stream of Buffers."""
 
-    def __init__(self, *, cfg: Config, graph: Any, embedder: Any, extractor: Any) -> None:
+    def __init__(
+        self,
+        *,
+        cfg: Config,
+        graph: Any,
+        embedder: Any,
+        extractor: Any,
+        source_id: str = "default",
+    ) -> None:
         self.cfg = cfg
         self.graph = graph
         self.embedder = embedder
         self.extractor = extractor
+        self.source_id = source_id
 
     async def run(self, buffers: Iterable[Buffer]) -> dict[str, int]:
         stats = {
@@ -122,7 +131,12 @@ class IngestPipeline:
         # Upsert entities first so we have ids for the rel inserts.
         entity_ids: dict[str, bytes] = {}
         for name, vec in zip(entity_set, entity_embs, strict=True):
-            eid = self.graph.upsert_entity(name=name, kind="concept", embedding=vec.tolist())
+            eid = self.graph.upsert_entity(
+                name=name,
+                kind="concept",
+                embedding=vec.tolist(),
+                source_id=self.source_id,
+            )
             entity_ids[name] = eid
             stats["entities"] += 1
 
@@ -133,6 +147,7 @@ class IngestPipeline:
                 source_doc=buf.doc_id,
                 source_span=buf.section_path,
                 embedding=vec.tolist(),
+                source_id=self.source_id,
             )
             stats["propositions"] += 1
             for t in prop["triples"]:
@@ -149,6 +164,7 @@ class IngestPipeline:
                     ontology_axis=t["ontology_axis"],
                     base_weight=min(1.0, base),
                     support_prop_id=pid,
+                    source_id=self.source_id,
                 )
                 stats["rels"] += 1
 
