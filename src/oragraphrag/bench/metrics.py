@@ -45,23 +45,52 @@ def score_correctness(*, question: str, gold: str, predicted: str, llm: Any) -> 
     )
 
 
+def _citation_match(gold_ref: str, pred_ref: str) -> bool:
+    """Return True if a predicted citation matches a gold doc#section.
+
+    Gold refs use a flat leaf section like `vectors.md#datatype`. Predicted
+    refs may carry the full markdown section hierarchy emitted by Task 6's
+    parser, e.g. `vectors.md#Vectors in Oracle Database 23ai / datatype`.
+    A match is declared when the docs are identical and the pred's section
+    path ends with the gold's section (case-insensitive, separator-tolerant).
+    """
+    if gold_ref == pred_ref:
+        return True
+    if "#" not in gold_ref or "#" not in pred_ref:
+        return False
+    gold_doc, gold_sec = gold_ref.split("#", 1)
+    pred_doc, pred_sec = pred_ref.split("#", 1)
+    if gold_doc != pred_doc:
+        return False
+    gold_leaf = gold_sec.split("/")[-1].strip().lower()
+    pred_leaf = pred_sec.split("/")[-1].strip().lower()
+    return gold_leaf == pred_leaf
+
+
 def citation_pr(*, gold: Sequence[str], pred: Sequence[str]) -> tuple[float, float]:
     """Return (precision, recall) over predicted vs gold citation sets.
+
+    Uses _citation_match for tolerant comparison so the deep section paths
+    Task 6 emits (e.g. `vectors.md#Vectors in Oracle Database 23ai / datatype`)
+    still match a flat gold reference (`vectors.md#datatype`).
 
     Sentinels:
     - Empty gold AND empty pred → (1.0, 1.0). Vacuously perfect.
     - Empty pred, nonempty gold → (1.0, 0.0). No false positives possible.
     - Empty gold, nonempty pred → (0.0, 1.0). No truth to miss.
     """
-    g, p = set(gold), set(pred)
-    if not g and not p:
+    g_list, p_list = list(gold), list(pred)
+    if not g_list and not p_list:
         return 1.0, 1.0
-    if not p:
+    if not p_list:
         return 1.0, 0.0
-    if not g:
+    if not g_list:
         return 0.0, 1.0
-    precision = len(g & p) / len(p)
-    recall = len(g & p) / len(g)
+    # Match each pred against any gold, each gold against any pred.
+    matched_pred = sum(1 for p in p_list if any(_citation_match(g, p) for g in g_list))
+    matched_gold = sum(1 for g in g_list if any(_citation_match(g, p) for p in p_list))
+    precision = matched_pred / len(p_list)
+    recall = matched_gold / len(g_list)
     return precision, recall
 
 
