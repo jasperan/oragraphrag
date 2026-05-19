@@ -2,29 +2,29 @@
   "suite": "benchmarks/suites/oracle_docs_qa.jsonl",
   "systems": {
     "naive_rag": {
-      "n": 10,
-      "median_correctness": 1.0,
-      "median_latency_ms": 2857.351555954665,
-      "median_tokens": 194.5,
-      "median_citation_precision": 0.18333333333333335,
-      "median_citation_recall": 1.0,
+      "n": 197,
+      "median_correctness": 0,
+      "median_latency_ms": 2705.263438168913,
+      "median_tokens": 206,
+      "median_citation_precision": 0.16666666666666666,
+      "median_citation_recall": 0.6666666666666666,
       "per_question": [
         {
           "id": "q001",
           "hops": 1,
-          "correctness": 2,
+          "correctness": 3,
           "citation_precision": 0.2,
           "citation_recall": 1.0,
-          "latency_ms": 3001.686287112534,
+          "latency_ms": 2736.562681151554,
           "tokens": 178
         },
         {
           "id": "q002",
           "hops": 1,
-          "correctness": 2,
+          "correctness": 3,
           "citation_precision": 0.16666666666666666,
           "citation_recall": 1.0,
-          "latency_ms": 3138.849460054189,
+          "latency_ms": 2277.8634200803936,
           "tokens": 225
         },
         {
@@ -33,7 +33,7 @@
           "correctness": 0,
           "citation_precision": 0.2,
           "citation_recall": 1.0,
-          "latency_ms": 2741.838115034625,
+          "latency_ms": 2441.393607063219,
           "tokens": 193
         },
         {
@@ -42,7 +42,7 @@
           "correctness": 0,
           "citation_precision": 0.2,
           "citation_recall": 1.0,
-          "latency_ms": 2972.864996874705,
+          "latency_ms": 2690.6981540378183,
           "tokens": 184
         },
         {
@@ -51,16 +51,16 @@
           "correctness": 0,
           "citation_precision": 0.25,
           "citation_recall": 1.0,
-          "latency_ms": 2319.350929930806,
+          "latency_ms": 3015.9016100224108,
           "tokens": 197
         },
         {
           "id": "q006",
           "hops": 1,
-          "correctness": 2,
+          "correctness": 3,
           "citation_precision": 0.0,
           "citation_recall": 0.0,
-          "latency_ms": 2510.738085024059,
+          "latency_ms": 2678.318829042837,
           "tokens": 187
         },
         {
@@ -69,16 +69,16 @@
           "correctness": 0,
           "citation_precision": 0.16666666666666666,
           "citation_recall": 1.0,
-          "latency_ms": 2227.9752818867564,
+          "latency_ms": 2496.9779748935252,
           "tokens": 213
         },
         {
           "id": "q008",
           "hops": 1,
-          "correctness": 2,
+          "correctness": 3,
           "citation_precision": 0.1111111111111111,
           "citation_recall": 1.0,
-          "latency_ms": 3948.8481930457056,
+          "latency_ms": 2452.4811902083457,
           "tokens": 209
         },
         {
@@ -87,35 +87,1718 @@
           "correctness": 0,
           "citation_precision": 0.0,
           "citation_recall": 0.0,
-          "latency_ms": 2240.0658088736236,
+          "latency_ms": 2087.5496498774737,
           "tokens": 196
         },
         {
           "id": "q010",
           "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 3010.988862020895,
+          "tokens": 186
+        },
+        {
+          "id": "q011",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2141.477157128975,
+          "tokens": 187
+        },
+        {
+          "id": "q012",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2496.8638841528445,
+          "tokens": 200
+        },
+        {
+          "id": "q013",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2984.185220906511,
+          "tokens": 215
+        },
+        {
+          "id": "q014",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 1805.8419169392437,
+          "tokens": 222
+        },
+        {
+          "id": "q015",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2640.510111115873,
+          "tokens": 191
+        },
+        {
+          "id": "q016",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.125,
+          "citation_recall": 1.0,
+          "latency_ms": 2232.4870980810374,
+          "tokens": 201
+        },
+        {
+          "id": "q017",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1648.6284411512315,
+          "tokens": 176
+        },
+        {
+          "id": "q018",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 7354.80332095176,
+          "tokens": 211
+        },
+        {
+          "id": "q019",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 3014.9126360192895,
+          "tokens": 214
+        },
+        {
+          "id": "q020",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 2196.0507549811155,
+          "tokens": 203
+        },
+        {
+          "id": "q021",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2279.042470967397,
+          "tokens": 173
+        },
+        {
+          "id": "q022",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1868.9330338966101,
+          "tokens": 204
+        },
+        {
+          "id": "q023",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2648.5048849135637,
+          "tokens": 191
+        },
+        {
+          "id": "q024",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 3169.7249959688634,
+          "tokens": 210
+        },
+        {
+          "id": "q025",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2634.53200715594,
+          "tokens": 199
+        },
+        {
+          "id": "q026",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 0.125,
+          "citation_recall": 1.0,
+          "latency_ms": 3824.2184668779373,
+          "tokens": 208
+        },
+        {
+          "id": "q027",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 2100.3598370589316,
+          "tokens": 237
+        },
+        {
+          "id": "q028",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2840.0844070129097,
+          "tokens": 216
+        },
+        {
+          "id": "q029",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1907.415078021586,
+          "tokens": 217
+        },
+        {
+          "id": "q030",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3706.694765947759,
+          "tokens": 202
+        },
+        {
+          "id": "q031",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.125,
+          "citation_recall": 1.0,
+          "latency_ms": 3124.4496279396117,
+          "tokens": 198
+        },
+        {
+          "id": "q032",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2286.1928229685873,
+          "tokens": 180
+        },
+        {
+          "id": "q033",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 2705.263438168913,
+          "tokens": 197
+        },
+        {
+          "id": "q034",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 2845.0673869811,
+          "tokens": 198
+        },
+        {
+          "id": "q035",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 3084.3030780088156,
+          "tokens": 197
+        },
+        {
+          "id": "q036",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2110.4855390731245,
+          "tokens": 180
+        },
+        {
+          "id": "q037",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.125,
+          "citation_recall": 1.0,
+          "latency_ms": 3176.223582820967,
+          "tokens": 193
+        },
+        {
+          "id": "q038",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1861.5931938402355,
+          "tokens": 195
+        },
+        {
+          "id": "q039",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 3392.1174448914826,
+          "tokens": 184
+        },
+        {
+          "id": "q040",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 3223.0266318656504,
+          "tokens": 205
+        },
+        {
+          "id": "q041",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2763.5165699757636,
+          "tokens": 191
+        },
+        {
+          "id": "q042",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 3092.460530810058,
+          "tokens": 195
+        },
+        {
+          "id": "q043",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 2725.6198909599334,
+          "tokens": 212
+        },
+        {
+          "id": "q044",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 2570.285193156451,
+          "tokens": 170
+        },
+        {
+          "id": "q045",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 2639.345577917993,
+          "tokens": 188
+        },
+        {
+          "id": "q046",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 6277.488098945469,
+          "tokens": 209
+        },
+        {
+          "id": "q047",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 3355.3461809642613,
+          "tokens": 195
+        },
+        {
+          "id": "q048",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 2197.795758023858,
+          "tokens": 204
+        },
+        {
+          "id": "q049",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 3786.4900128915906,
+          "tokens": 201
+        },
+        {
+          "id": "q050",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2403.3683200832456,
+          "tokens": 207
+        },
+        {
+          "id": "q051",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2129.6562971547246,
+          "tokens": 174
+        },
+        {
+          "id": "q052",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.125,
+          "citation_recall": 1.0,
+          "latency_ms": 2790.8452139236033,
+          "tokens": 219
+        },
+        {
+          "id": "q053",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 2652.7377569582313,
+          "tokens": 232
+        },
+        {
+          "id": "q054",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.125,
+          "citation_recall": 1.0,
+          "latency_ms": 2908.475572010502,
+          "tokens": 210
+        },
+        {
+          "id": "q055",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 3245.4058472067118,
+          "tokens": 223
+        },
+        {
+          "id": "q056",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 3226.810709806159,
+          "tokens": 230
+        },
+        {
+          "id": "q057",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 3153.2973719295114,
+          "tokens": 223
+        },
+        {
+          "id": "q058",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 1.0,
+          "latency_ms": 3648.7624410074204,
+          "tokens": 200
+        },
+        {
+          "id": "q059",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 2965.0421398691833,
+          "tokens": 217
+        },
+        {
+          "id": "q060",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 3339.3915391061455,
+          "tokens": 231
+        },
+        {
+          "id": "q061",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 2308.014373993501,
+          "tokens": 223
+        },
+        {
+          "id": "q062",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 3123.929796041921,
+          "tokens": 223
+        },
+        {
+          "id": "q063",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 2507.6802358962595,
+          "tokens": 198
+        },
+        {
+          "id": "q064",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 3800.5769948940724,
+          "tokens": 196
+        },
+        {
+          "id": "q065",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 2131.8603169638664,
+          "tokens": 228
+        },
+        {
+          "id": "q066",
+          "hops": 1,
           "correctness": 3,
           "citation_precision": 0.25,
           "citation_recall": 1.0,
-          "latency_ms": 3514.785936102271,
+          "latency_ms": 3193.738247966394,
+          "tokens": 229
+        },
+        {
+          "id": "q067",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 1.0,
+          "latency_ms": 3631.433101836592,
+          "tokens": 225
+        },
+        {
+          "id": "q068",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 2091.2182859610766,
+          "tokens": 227
+        },
+        {
+          "id": "q069",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 3153.1778760254383,
+          "tokens": 214
+        },
+        {
+          "id": "q070",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 2131.892078090459,
+          "tokens": 227
+        },
+        {
+          "id": "q071",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 3206.0256050899625,
+          "tokens": 201
+        },
+        {
+          "id": "q072",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 3900.121934944764,
+          "tokens": 216
+        },
+        {
+          "id": "q073",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 1.0,
+          "latency_ms": 2314.0174048021436,
+          "tokens": 205
+        },
+        {
+          "id": "q074",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2224.3486759252846,
+          "tokens": 192
+        },
+        {
+          "id": "q075",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1943.947868887335,
+          "tokens": 195
+        },
+        {
+          "id": "q076",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.125,
+          "citation_recall": 1.0,
+          "latency_ms": 4071.776084136218,
           "tokens": 186
+        },
+        {
+          "id": "q077",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 0.125,
+          "citation_recall": 1.0,
+          "latency_ms": 2081.7798969801515,
+          "tokens": 188
+        },
+        {
+          "id": "q078",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 2457.3327018879354,
+          "tokens": 223
+        },
+        {
+          "id": "q079",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 2133.5990249644965,
+          "tokens": 221
+        },
+        {
+          "id": "q080",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 1.0,
+          "latency_ms": 3270.0507501140237,
+          "tokens": 220
+        },
+        {
+          "id": "q081",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 2681.4344809390604,
+          "tokens": 185
+        },
+        {
+          "id": "q082",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.125,
+          "citation_recall": 0.5,
+          "latency_ms": 2672.725453041494,
+          "tokens": 219
+        },
+        {
+          "id": "q083",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2939.4809550140053,
+          "tokens": 221
+        },
+        {
+          "id": "q084",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 2538.059257902205,
+          "tokens": 188
+        },
+        {
+          "id": "q085",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1868.9694060012698,
+          "tokens": 179
+        },
+        {
+          "id": "q086",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2816.211353056133,
+          "tokens": 204
+        },
+        {
+          "id": "q087",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2992.557739140466,
+          "tokens": 204
+        },
+        {
+          "id": "q088",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.125,
+          "citation_recall": 0.5,
+          "latency_ms": 1886.6994690615684,
+          "tokens": 220
+        },
+        {
+          "id": "q089",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 2710.4246439412236,
+          "tokens": 203
+        },
+        {
+          "id": "q090",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.4,
+          "citation_recall": 1.0,
+          "latency_ms": 3147.1538059413433,
+          "tokens": 230
+        },
+        {
+          "id": "q091",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2908.5540398955345,
+          "tokens": 204
+        },
+        {
+          "id": "q092",
+          "hops": 2,
+          "correctness": 4,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 1.0,
+          "latency_ms": 3698.7311840057373,
+          "tokens": 201
+        },
+        {
+          "id": "q093",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 2143.376428168267,
+          "tokens": 187
+        },
+        {
+          "id": "q094",
+          "hops": 2,
+          "correctness": 2,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 4788.55276084505,
+          "tokens": 216
+        },
+        {
+          "id": "q095",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2251.607864862308,
+          "tokens": 197
+        },
+        {
+          "id": "q096",
+          "hops": 2,
+          "correctness": 4,
+          "citation_precision": 0.5,
+          "citation_recall": 1.0,
+          "latency_ms": 2910.08531418629,
+          "tokens": 205
+        },
+        {
+          "id": "q097",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2639.4897729624063,
+          "tokens": 175
+        },
+        {
+          "id": "q098",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 1.0,
+          "latency_ms": 3125.9314429480582,
+          "tokens": 225
+        },
+        {
+          "id": "q099",
+          "hops": 2,
+          "correctness": 4,
+          "citation_precision": 0.2857142857142857,
+          "citation_recall": 1.0,
+          "latency_ms": 4277.073509059846,
+          "tokens": 204
+        },
+        {
+          "id": "q100",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2857142857142857,
+          "citation_recall": 1.0,
+          "latency_ms": 3146.5064648073167,
+          "tokens": 212
+        },
+        {
+          "id": "q101",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.1111111111111111,
+          "citation_recall": 0.5,
+          "latency_ms": 1826.0348979383707,
+          "tokens": 208
+        },
+        {
+          "id": "q102",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2626.2709628790617,
+          "tokens": 235
+        },
+        {
+          "id": "q103",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 2946.235500043258,
+          "tokens": 220
+        },
+        {
+          "id": "q104",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.5,
+          "citation_recall": 1.0,
+          "latency_ms": 2433.1913727801293,
+          "tokens": 232
+        },
+        {
+          "id": "q105",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1797.6539321243763,
+          "tokens": 191
+        },
+        {
+          "id": "q106",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2485.3271250613034,
+          "tokens": 228
+        },
+        {
+          "id": "q107",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2571.305200923234,
+          "tokens": 197
+        },
+        {
+          "id": "q108",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 0.5,
+          "latency_ms": 1857.6132040470839,
+          "tokens": 236
+        },
+        {
+          "id": "q109",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1982.421929948032,
+          "tokens": 205
+        },
+        {
+          "id": "q110",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 1.0,
+          "latency_ms": 2457.403220003471,
+          "tokens": 202
+        },
+        {
+          "id": "q111",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2860.4086679406464,
+          "tokens": 200
+        },
+        {
+          "id": "q112",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 1.0,
+          "latency_ms": 3480.33281089738,
+          "tokens": 211
+        },
+        {
+          "id": "q113",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 2254.211595049128,
+          "tokens": 195
+        },
+        {
+          "id": "q114",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.125,
+          "citation_recall": 0.5,
+          "latency_ms": 2925.8693989831954,
+          "tokens": 193
+        },
+        {
+          "id": "q115",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1616.7972851544619,
+          "tokens": 188
+        },
+        {
+          "id": "q116",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 1.0,
+          "latency_ms": 4309.938519028947,
+          "tokens": 222
+        },
+        {
+          "id": "q117",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.4,
+          "citation_recall": 1.0,
+          "latency_ms": 3194.922013906762,
+          "tokens": 233
+        },
+        {
+          "id": "q118",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.125,
+          "citation_recall": 0.5,
+          "latency_ms": 2790.550476172939,
+          "tokens": 188
+        },
+        {
+          "id": "q119",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 3061.610121978447,
+          "tokens": 203
+        },
+        {
+          "id": "q120",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.1111111111111111,
+          "citation_recall": 0.5,
+          "latency_ms": 2311.637635109946,
+          "tokens": 229
+        },
+        {
+          "id": "q121",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1678.1972229946405,
+          "tokens": 177
+        },
+        {
+          "id": "q122",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 4055.6484279222786,
+          "tokens": 212
+        },
+        {
+          "id": "q123",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.5,
+          "citation_recall": 1.0,
+          "latency_ms": 2957.8977450728416,
+          "tokens": 237
+        },
+        {
+          "id": "q124",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2933.168343035504,
+          "tokens": 219
+        },
+        {
+          "id": "q125",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 2839.1137309372425,
+          "tokens": 224
+        },
+        {
+          "id": "q126",
+          "hops": 2,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 4926.316533004865,
+          "tokens": 209
+        },
+        {
+          "id": "q127",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.4,
+          "citation_recall": 1.0,
+          "latency_ms": 3315.3423031326383,
+          "tokens": 202
+        },
+        {
+          "id": "q128",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2857142857142857,
+          "citation_recall": 1.0,
+          "latency_ms": 2934.750015847385,
+          "tokens": 206
+        },
+        {
+          "id": "q129",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2305.2801850717515,
+          "tokens": 181
+        },
+        {
+          "id": "q130",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.1111111111111111,
+          "citation_recall": 0.5,
+          "latency_ms": 2910.3860470931977,
+          "tokens": 198
+        },
+        {
+          "id": "q131",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 2942.390589043498,
+          "tokens": 226
+        },
+        {
+          "id": "q132",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 3188.2616369985044,
+          "tokens": 224
+        },
+        {
+          "id": "q133",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 3801.3899358920753,
+          "tokens": 197
+        },
+        {
+          "id": "q134",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 2790.7345190178603,
+          "tokens": 201
+        },
+        {
+          "id": "q135",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 3037.206650013104,
+          "tokens": 221
+        },
+        {
+          "id": "q136",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 2471.8242678791285,
+          "tokens": 208
+        },
+        {
+          "id": "q137",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2427.5887010153383,
+          "tokens": 207
+        },
+        {
+          "id": "q138",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 1787.291520042345,
+          "tokens": 226
+        },
+        {
+          "id": "q139",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 1994.794226018712,
+          "tokens": 179
+        },
+        {
+          "id": "q140",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.125,
+          "citation_recall": 0.5,
+          "latency_ms": 3317.9116339888424,
+          "tokens": 206
+        },
+        {
+          "id": "q141",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 3505.0233770161867,
+          "tokens": 213
+        },
+        {
+          "id": "q142",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2515.1700070127845,
+          "tokens": 200
+        },
+        {
+          "id": "q143",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 2956.070944899693,
+          "tokens": 225
+        },
+        {
+          "id": "q144",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 4042.720919009298,
+          "tokens": 209
+        },
+        {
+          "id": "q145",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.4,
+          "citation_recall": 1.0,
+          "latency_ms": 2609.546859981492,
+          "tokens": 198
+        },
+        {
+          "id": "q146",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 0.5,
+          "latency_ms": 2034.1243939474225,
+          "tokens": 223
+        },
+        {
+          "id": "q147",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 4368.411641102284,
+          "tokens": 204
+        },
+        {
+          "id": "q148",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 0.5,
+          "latency_ms": 1998.2835270930082,
+          "tokens": 209
+        },
+        {
+          "id": "q149",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.5,
+          "latency_ms": 3126.3916669413447,
+          "tokens": 188
+        },
+        {
+          "id": "q150",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 0.5,
+          "latency_ms": 2174.471156904474,
+          "tokens": 192
+        },
+        {
+          "id": "q151",
+          "hops": 2,
+          "correctness": 4,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 4743.8446609303355,
+          "tokens": 202
+        },
+        {
+          "id": "q152",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.5,
+          "latency_ms": 2290.6599729321897,
+          "tokens": 190
+        },
+        {
+          "id": "q153",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 3948.149594012648,
+          "tokens": 194
+        },
+        {
+          "id": "q154",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 1.0,
+          "latency_ms": 2853.166294982657,
+          "tokens": 226
+        },
+        {
+          "id": "q155",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 2692.036898806691,
+          "tokens": 189
+        },
+        {
+          "id": "q156",
+          "hops": 2,
+          "correctness": 2,
+          "citation_precision": 0.25,
+          "citation_recall": 1.0,
+          "latency_ms": 4279.636167921126,
+          "tokens": 217
+        },
+        {
+          "id": "q157",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 0.5,
+          "latency_ms": 2829.237903933972,
+          "tokens": 230
+        },
+        {
+          "id": "q158",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3402.5959610007703,
+          "tokens": 231
+        },
+        {
+          "id": "q159",
+          "hops": 3,
+          "correctness": 3,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 3234.970988938585,
+          "tokens": 213
+        },
+        {
+          "id": "q160",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 1706.039723008871,
+          "tokens": 222
+        },
+        {
+          "id": "q161",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.125,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 3311.448809923604,
+          "tokens": 237
+        },
+        {
+          "id": "q162",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 2555.9898840729147,
+          "tokens": 214
+        },
+        {
+          "id": "q163",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.2857142857142857,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 3031.822685850784,
+          "tokens": 228
+        },
+        {
+          "id": "q164",
+          "hops": 3,
+          "correctness": 3,
+          "citation_precision": 0.2,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 4224.658448947594,
+          "tokens": 225
+        },
+        {
+          "id": "q165",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.5,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2250.881393905729,
+          "tokens": 196
+        },
+        {
+          "id": "q166",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1844.8828810360283,
+          "tokens": 207
+        },
+        {
+          "id": "q167",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.2857142857142857,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2589.3325360957533,
+          "tokens": 209
+        },
+        {
+          "id": "q168",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.1111111111111111,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 3206.2926520593464,
+          "tokens": 220
+        },
+        {
+          "id": "q169",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.14285714285714285,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 2683.4277058951557,
+          "tokens": 202
+        },
+        {
+          "id": "q170",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2119.8373900260776,
+          "tokens": 238
+        },
+        {
+          "id": "q171",
+          "hops": 3,
+          "correctness": 4,
+          "citation_precision": 0.42857142857142855,
+          "citation_recall": 1.0,
+          "latency_ms": 4555.981751997024,
+          "tokens": 237
+        },
+        {
+          "id": "q172",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.125,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 2830.1695799455047,
+          "tokens": 211
+        },
+        {
+          "id": "q173",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.2857142857142857,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2530.9542540926486,
+          "tokens": 213
+        },
+        {
+          "id": "q174",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.2857142857142857,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2094.9226280208677,
+          "tokens": 231
+        },
+        {
+          "id": "q175",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 2863.1113299634308,
+          "tokens": 208
+        },
+        {
+          "id": "q176",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2957.524095894769,
+          "tokens": 215
+        },
+        {
+          "id": "q177",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.25,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 1766.0922601353377,
+          "tokens": 182
+        },
+        {
+          "id": "q178",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.2,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 4989.899265114218,
+          "tokens": 231
+        },
+        {
+          "id": "q179",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3009.6282509621233,
+          "tokens": 214
+        },
+        {
+          "id": "q180",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.6,
+          "citation_recall": 1.0,
+          "latency_ms": 2358.0574579536915,
+          "tokens": 237
+        },
+        {
+          "id": "q181",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1666.2331640254706,
+          "tokens": 202
+        },
+        {
+          "id": "q182",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2581.5479059237987,
+          "tokens": 231
+        },
+        {
+          "id": "q183",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.5,
+          "citation_recall": 1.0,
+          "latency_ms": 3211.3269579131156,
+          "tokens": 210
+        },
+        {
+          "id": "q184",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2853.6257329396904,
+          "tokens": 213
+        },
+        {
+          "id": "q185",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 0.6666666666666666,
+          "latency_ms": 2897.1821849700063,
+          "tokens": 207
+        },
+        {
+          "id": "q186",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.5,
+          "citation_recall": 1.0,
+          "latency_ms": 2203.3653100952506,
+          "tokens": 236
+        },
+        {
+          "id": "q187",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 0.16666666666666666,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 1850.4341919906437,
+          "tokens": 210
+        },
+        {
+          "id": "q188",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1793.1548829656094,
+          "tokens": 177
+        },
+        {
+          "id": "q189",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1988.3435748051852,
+          "tokens": 169
+        },
+        {
+          "id": "q190",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1990.970510058105,
+          "tokens": 214
+        },
+        {
+          "id": "q191",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1733.1819331739098,
+          "tokens": 175
+        },
+        {
+          "id": "q192",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1835.9221168793738,
+          "tokens": 177
+        },
+        {
+          "id": "q193",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1808.2116371951997,
+          "tokens": 174
+        },
+        {
+          "id": "q194",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1768.8531819730997,
+          "tokens": 206
+        },
+        {
+          "id": "q195",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1759.1474610380828,
+          "tokens": 172
+        },
+        {
+          "id": "q196",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1626.9287180621177,
+          "tokens": 190
+        },
+        {
+          "id": "q197",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2096.363299060613,
+          "tokens": 181
         }
       ]
     },
     "oragraphrag": {
-      "n": 10,
-      "median_correctness": 1.0,
-      "median_latency_ms": 2184.316224534996,
-      "median_tokens": 10.0,
+      "n": 197,
+      "median_correctness": 0,
+      "median_latency_ms": 2389.821759192273,
+      "median_tokens": 10,
       "median_citation_precision": 1.0,
-      "median_citation_recall": 0.5,
+      "median_citation_recall": 0.0,
       "per_question": [
         {
           "id": "q001",
           "hops": 1,
-          "correctness": 2,
+          "correctness": 3,
           "citation_precision": 1.0,
           "citation_recall": 1.0,
-          "latency_ms": 2981.773644918576,
+          "latency_ms": 2704.273847164586,
           "tokens": 8
         },
         {
@@ -124,7 +1807,7 @@
           "correctness": 3,
           "citation_precision": 1.0,
           "citation_recall": 1.0,
-          "latency_ms": 2046.4675188995898,
+          "latency_ms": 2278.533823089674,
           "tokens": 12
         },
         {
@@ -133,7 +1816,7 @@
           "correctness": 0,
           "citation_precision": 1.0,
           "citation_recall": 0.0,
-          "latency_ms": 2183.5545289795846,
+          "latency_ms": 2027.2536149714142,
           "tokens": 10
         },
         {
@@ -142,7 +1825,7 @@
           "correctness": 0,
           "citation_precision": 1.0,
           "citation_recall": 0.0,
-          "latency_ms": 2000.7167188450694,
+          "latency_ms": 2429.197625024244,
           "tokens": 10
         },
         {
@@ -151,17 +1834,17 @@
           "correctness": 0,
           "citation_precision": 1.0,
           "citation_recall": 0.0,
-          "latency_ms": 2375.689512817189,
+          "latency_ms": 3668.1009330786765,
           "tokens": 10
         },
         {
           "id": "q006",
           "hops": 1,
           "correctness": 4,
-          "citation_precision": 0.16666666666666666,
-          "citation_recall": 1.0,
-          "latency_ms": 2950.5145649891347,
-          "tokens": 32
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3118.545164819807,
+          "tokens": 18
         },
         {
           "id": "q007",
@@ -169,7 +1852,7 @@
           "correctness": 0,
           "citation_precision": 1.0,
           "citation_recall": 0.0,
-          "latency_ms": 2185.077920090407,
+          "latency_ms": 2225.2304840367287,
           "tokens": 10
         },
         {
@@ -178,8 +1861,8 @@
           "correctness": 3,
           "citation_precision": 1.0,
           "citation_recall": 1.0,
-          "latency_ms": 5508.860379923135,
-          "tokens": 13
+          "latency_ms": 2715.619270922616,
+          "tokens": 9
         },
         {
           "id": "q009",
@@ -187,17 +1870,1700 @@
           "correctness": 0,
           "citation_precision": 1.0,
           "citation_recall": 0.0,
-          "latency_ms": 1887.4961601104587,
+          "latency_ms": 1990.7266299705952,
           "tokens": 10
         },
         {
           "id": "q010",
           "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1816.2642060779035,
+          "tokens": 2
+        },
+        {
+          "id": "q011",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1950.0770438462496,
+          "tokens": 10
+        },
+        {
+          "id": "q012",
+          "hops": 1,
           "correctness": 3,
           "citation_precision": 1.0,
           "citation_recall": 1.0,
-          "latency_ms": 2137.590670026839,
+          "latency_ms": 2552.434870041907,
+          "tokens": 16
+        },
+        {
+          "id": "q013",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1731.0884741600603,
+          "tokens": 10
+        },
+        {
+          "id": "q014",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2039.2169570550323,
+          "tokens": 12
+        },
+        {
+          "id": "q015",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1950.582053977996,
+          "tokens": 10
+        },
+        {
+          "id": "q016",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2089.0147578902543,
+          "tokens": 8
+        },
+        {
+          "id": "q017",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2389.821759192273,
+          "tokens": 10
+        },
+        {
+          "id": "q018",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3152.9710658360273,
+          "tokens": 10
+        },
+        {
+          "id": "q019",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2564.528735121712,
+          "tokens": 10
+        },
+        {
+          "id": "q020",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1892.1951311640441,
+          "tokens": 8
+        },
+        {
+          "id": "q021",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1958.2593340892345,
+          "tokens": 10
+        },
+        {
+          "id": "q022",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1951.9050961825997,
+          "tokens": 10
+        },
+        {
+          "id": "q023",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 4302.839619107544,
+          "tokens": 27
+        },
+        {
+          "id": "q024",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1979.8413279931992,
+          "tokens": 18
+        },
+        {
+          "id": "q025",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2052.512348862365,
+          "tokens": 9
+        },
+        {
+          "id": "q026",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2908.2943371031433,
+          "tokens": 17
+        },
+        {
+          "id": "q027",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3503.171215998009,
+          "tokens": 10
+        },
+        {
+          "id": "q028",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2845.7607668824494,
+          "tokens": 10
+        },
+        {
+          "id": "q029",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2022.8792601265013,
+          "tokens": 10
+        },
+        {
+          "id": "q030",
+          "hops": 1,
+          "correctness": 1,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3094.473612960428,
+          "tokens": 20
+        },
+        {
+          "id": "q031",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.4,
+          "citation_recall": 1.0,
+          "latency_ms": 2366.3930271286517,
+          "tokens": 18
+        },
+        {
+          "id": "q032",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2257.945677032694,
+          "tokens": 7
+        },
+        {
+          "id": "q033",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2568.2885008864105,
           "tokens": 2
+        },
+        {
+          "id": "q034",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2106.474098050967,
+          "tokens": 9
+        },
+        {
+          "id": "q035",
+          "hops": 1,
+          "correctness": 1,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2205.8365610428154,
+          "tokens": 2
+        },
+        {
+          "id": "q036",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1638.1339400541037,
+          "tokens": 10
+        },
+        {
+          "id": "q037",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1867.7605469711125,
+          "tokens": 12
+        },
+        {
+          "id": "q038",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1977.5789361447096,
+          "tokens": 10
+        },
+        {
+          "id": "q039",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2342.786876950413,
+          "tokens": 7
+        },
+        {
+          "id": "q040",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2121.507435105741,
+          "tokens": 2
+        },
+        {
+          "id": "q041",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2507.0197980385274,
+          "tokens": 10
+        },
+        {
+          "id": "q042",
+          "hops": 1,
+          "correctness": 2,
+          "citation_precision": 0.4,
+          "citation_recall": 1.0,
+          "latency_ms": 2842.0086950063705,
+          "tokens": 56
+        },
+        {
+          "id": "q043",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2061.9740949478,
+          "tokens": 14
+        },
+        {
+          "id": "q044",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1754.2775280307978,
+          "tokens": 6
+        },
+        {
+          "id": "q045",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.375,
+          "citation_recall": 1.0,
+          "latency_ms": 2947.0261191017926,
+          "tokens": 88
+        },
+        {
+          "id": "q046",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2063.8078870251775,
+          "tokens": 10
+        },
+        {
+          "id": "q047",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.75,
+          "citation_recall": 1.0,
+          "latency_ms": 2517.3561971168965,
+          "tokens": 50
+        },
+        {
+          "id": "q048",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2430.2109379787,
+          "tokens": 17
+        },
+        {
+          "id": "q049",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2345.1357518788427,
+          "tokens": 12
+        },
+        {
+          "id": "q050",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1966.5616499260068,
+          "tokens": 4
+        },
+        {
+          "id": "q051",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2346.979103051126,
+          "tokens": 10
+        },
+        {
+          "id": "q052",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2227.4781139567494,
+          "tokens": 12
+        },
+        {
+          "id": "q053",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1848.4400811139494,
+          "tokens": 15
+        },
+        {
+          "id": "q054",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2477.452583843842,
+          "tokens": 9
+        },
+        {
+          "id": "q055",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2250.38448208943,
+          "tokens": 15
+        },
+        {
+          "id": "q056",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2232.1654111146927,
+          "tokens": 11
+        },
+        {
+          "id": "q057",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2781.8508360069245,
+          "tokens": 13
+        },
+        {
+          "id": "q058",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2676.8616130575538,
+          "tokens": 9
+        },
+        {
+          "id": "q059",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2209.4561310950667,
+          "tokens": 17
+        },
+        {
+          "id": "q060",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3127.065335167572,
+          "tokens": 29
+        },
+        {
+          "id": "q061",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2294.4080610759556,
+          "tokens": 2
+        },
+        {
+          "id": "q062",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2484.5381160266697,
+          "tokens": 10
+        },
+        {
+          "id": "q063",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2289.21646787785,
+          "tokens": 11
+        },
+        {
+          "id": "q064",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.8,
+          "citation_recall": 1.0,
+          "latency_ms": 2642.435119021684,
+          "tokens": 61
+        },
+        {
+          "id": "q065",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 0.5,
+          "citation_recall": 1.0,
+          "latency_ms": 2434.382632141933,
+          "tokens": 14
+        },
+        {
+          "id": "q066",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2322.011284995824,
+          "tokens": 10
+        },
+        {
+          "id": "q067",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2422.3372500855476,
+          "tokens": 10
+        },
+        {
+          "id": "q068",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2149.2208449635655,
+          "tokens": 13
+        },
+        {
+          "id": "q069",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.5,
+          "citation_recall": 1.0,
+          "latency_ms": 3227.4621590040624,
+          "tokens": 25
+        },
+        {
+          "id": "q070",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 0.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2400.9512308984995,
+          "tokens": 4
+        },
+        {
+          "id": "q071",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1713.4346889797598,
+          "tokens": 10
+        },
+        {
+          "id": "q072",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2613.0626800004393,
+          "tokens": 10
+        },
+        {
+          "id": "q073",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2281.428578076884,
+          "tokens": 12
+        },
+        {
+          "id": "q074",
+          "hops": 1,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2069.547518854961,
+          "tokens": 22
+        },
+        {
+          "id": "q075",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2051.987221930176,
+          "tokens": 10
+        },
+        {
+          "id": "q076",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2220.6367689650506,
+          "tokens": 15
+        },
+        {
+          "id": "q077",
+          "hops": 1,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1900.488314917311,
+          "tokens": 10
+        },
+        {
+          "id": "q078",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2674.4725957978517,
+          "tokens": 12
+        },
+        {
+          "id": "q079",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2128.0085290782154,
+          "tokens": 8
+        },
+        {
+          "id": "q080",
+          "hops": 1,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 2476.5206300653517,
+          "tokens": 13
+        },
+        {
+          "id": "q081",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2940.84356399253,
+          "tokens": 10
+        },
+        {
+          "id": "q082",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1982.7870400622487,
+          "tokens": 10
+        },
+        {
+          "id": "q083",
+          "hops": 2,
+          "correctness": 2,
+          "citation_precision": 0.5,
+          "citation_recall": 0.5,
+          "latency_ms": 3649.3306970223784,
+          "tokens": 12
+        },
+        {
+          "id": "q084",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2097.8982269298285,
+          "tokens": 10
+        },
+        {
+          "id": "q085",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2138.1792610045522,
+          "tokens": 10
+        },
+        {
+          "id": "q086",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2735.322775086388,
+          "tokens": 10
+        },
+        {
+          "id": "q087",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3155.216159997508,
+          "tokens": 10
+        },
+        {
+          "id": "q088",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2051.0135320946574,
+          "tokens": 10
+        },
+        {
+          "id": "q089",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2207.5301269069314,
+          "tokens": 10
+        },
+        {
+          "id": "q090",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 0.5,
+          "latency_ms": 3029.2359858285636,
+          "tokens": 34
+        },
+        {
+          "id": "q091",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.75,
+          "citation_recall": 1.0,
+          "latency_ms": 2803.6061390303075,
+          "tokens": 46
+        },
+        {
+          "id": "q092",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 0.5,
+          "latency_ms": 3588.966076960787,
+          "tokens": 15
+        },
+        {
+          "id": "q093",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2512.93485192582,
+          "tokens": 10
+        },
+        {
+          "id": "q094",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.75,
+          "citation_recall": 0.5,
+          "latency_ms": 4153.769995085895,
+          "tokens": 79
+        },
+        {
+          "id": "q095",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2835.4947180487216,
+          "tokens": 10
+        },
+        {
+          "id": "q096",
+          "hops": 2,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 0.5,
+          "latency_ms": 3303.9310639724135,
+          "tokens": 39
+        },
+        {
+          "id": "q097",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1994.2225499544293,
+          "tokens": 10
+        },
+        {
+          "id": "q098",
+          "hops": 2,
+          "correctness": 2,
+          "citation_precision": 1.0,
+          "citation_recall": 0.5,
+          "latency_ms": 2256.428215885535,
+          "tokens": 11
+        },
+        {
+          "id": "q099",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2883.6442318279296,
+          "tokens": 10
+        },
+        {
+          "id": "q100",
+          "hops": 2,
+          "correctness": 4,
+          "citation_precision": 0.6666666666666666,
+          "citation_recall": 0.5,
+          "latency_ms": 2329.6227329410613,
+          "tokens": 27
+        },
+        {
+          "id": "q101",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1809.301117900759,
+          "tokens": 10
+        },
+        {
+          "id": "q102",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2006.960874190554,
+          "tokens": 10
+        },
+        {
+          "id": "q103",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2966.2308010738343,
+          "tokens": 10
+        },
+        {
+          "id": "q104",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2402.502260869369,
+          "tokens": 10
+        },
+        {
+          "id": "q105",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2044.3973210640252,
+          "tokens": 10
+        },
+        {
+          "id": "q106",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2805.6085088755935,
+          "tokens": 10
+        },
+        {
+          "id": "q107",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2463.381905807182,
+          "tokens": 10
+        },
+        {
+          "id": "q108",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2160.9382710885257,
+          "tokens": 10
+        },
+        {
+          "id": "q109",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1957.8727891203016,
+          "tokens": 10
+        },
+        {
+          "id": "q110",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2119.224929017946,
+          "tokens": 10
+        },
+        {
+          "id": "q111",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 4126.446126960218,
+          "tokens": 10
+        },
+        {
+          "id": "q112",
+          "hops": 2,
+          "correctness": 4,
+          "citation_precision": 0.3333333333333333,
+          "citation_recall": 0.5,
+          "latency_ms": 2617.359194904566,
+          "tokens": 48
+        },
+        {
+          "id": "q113",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2499.038320966065,
+          "tokens": 10
+        },
+        {
+          "id": "q114",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2046.3020261377096,
+          "tokens": 10
+        },
+        {
+          "id": "q115",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2552.314182976261,
+          "tokens": 10
+        },
+        {
+          "id": "q116",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 0.5,
+          "latency_ms": 2363.601188873872,
+          "tokens": 21
+        },
+        {
+          "id": "q117",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2686.565427109599,
+          "tokens": 10
+        },
+        {
+          "id": "q118",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2513.191517908126,
+          "tokens": 10
+        },
+        {
+          "id": "q119",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1810.3995518758893,
+          "tokens": 10
+        },
+        {
+          "id": "q120",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1977.138056885451,
+          "tokens": 10
+        },
+        {
+          "id": "q121",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1886.7097729817033,
+          "tokens": 10
+        },
+        {
+          "id": "q122",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2467.13624894619,
+          "tokens": 10
+        },
+        {
+          "id": "q123",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2639.738151105121,
+          "tokens": 10
+        },
+        {
+          "id": "q124",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2023.6283910926431,
+          "tokens": 10
+        },
+        {
+          "id": "q125",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3518.2400450576097,
+          "tokens": 10
+        },
+        {
+          "id": "q126",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3360.925026005134,
+          "tokens": 10
+        },
+        {
+          "id": "q127",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2881.3167079351842,
+          "tokens": 10
+        },
+        {
+          "id": "q128",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2022.4220629315823,
+          "tokens": 10
+        },
+        {
+          "id": "q129",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1898.4328270889819,
+          "tokens": 10
+        },
+        {
+          "id": "q130",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2315.936774946749,
+          "tokens": 10
+        },
+        {
+          "id": "q131",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2170.167112024501,
+          "tokens": 10
+        },
+        {
+          "id": "q132",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 0.5,
+          "latency_ms": 2565.1875629555434,
+          "tokens": 40
+        },
+        {
+          "id": "q133",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2568.749306956306,
+          "tokens": 10
+        },
+        {
+          "id": "q134",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2508.0605382099748,
+          "tokens": 10
+        },
+        {
+          "id": "q135",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2890.333362855017,
+          "tokens": 10
+        },
+        {
+          "id": "q136",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2278.694544918835,
+          "tokens": 10
+        },
+        {
+          "id": "q137",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2804.7804008238018,
+          "tokens": 10
+        },
+        {
+          "id": "q138",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2166.389015968889,
+          "tokens": 10
+        },
+        {
+          "id": "q139",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1998.9828660618514,
+          "tokens": 10
+        },
+        {
+          "id": "q140",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1962.2113991063088,
+          "tokens": 10
+        },
+        {
+          "id": "q141",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2831.117812078446,
+          "tokens": 10
+        },
+        {
+          "id": "q142",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2239.499240880832,
+          "tokens": 10
+        },
+        {
+          "id": "q143",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2262.2171668335795,
+          "tokens": 10
+        },
+        {
+          "id": "q144",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3091.6717150248587,
+          "tokens": 10
+        },
+        {
+          "id": "q145",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2393.8204650767148,
+          "tokens": 10
+        },
+        {
+          "id": "q146",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2665.347281843424,
+          "tokens": 10
+        },
+        {
+          "id": "q147",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2898.78609101288,
+          "tokens": 10
+        },
+        {
+          "id": "q148",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1783.4827278275043,
+          "tokens": 10
+        },
+        {
+          "id": "q149",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2584.343343041837,
+          "tokens": 10
+        },
+        {
+          "id": "q150",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2810.3027681354433,
+          "tokens": 10
+        },
+        {
+          "id": "q151",
+          "hops": 2,
+          "correctness": 3,
+          "citation_precision": 0.75,
+          "citation_recall": 0.5,
+          "latency_ms": 2776.1627028230578,
+          "tokens": 35
+        },
+        {
+          "id": "q152",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2397.63109292835,
+          "tokens": 10
+        },
+        {
+          "id": "q153",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2547.465353971347,
+          "tokens": 10
+        },
+        {
+          "id": "q154",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2772.1985278185457,
+          "tokens": 10
+        },
+        {
+          "id": "q155",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2255.1341659855098,
+          "tokens": 10
+        },
+        {
+          "id": "q156",
+          "hops": 2,
+          "correctness": 2,
+          "citation_precision": 0.8571428571428571,
+          "citation_recall": 1.0,
+          "latency_ms": 2868.104138178751,
+          "tokens": 57
+        },
+        {
+          "id": "q157",
+          "hops": 2,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2398.076614132151,
+          "tokens": 10
+        },
+        {
+          "id": "q158",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3553.2400510273874,
+          "tokens": 10
+        },
+        {
+          "id": "q159",
+          "hops": 3,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 3461.74493804574,
+          "tokens": 50
+        },
+        {
+          "id": "q160",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2325.9751200675964,
+          "tokens": 10
+        },
+        {
+          "id": "q161",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3142.596074845642,
+          "tokens": 10
+        },
+        {
+          "id": "q162",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2350.512099219486,
+          "tokens": 10
+        },
+        {
+          "id": "q163",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2359.917805995792,
+          "tokens": 10
+        },
+        {
+          "id": "q164",
+          "hops": 3,
+          "correctness": 3,
+          "citation_precision": 1.0,
+          "citation_recall": 0.3333333333333333,
+          "latency_ms": 2712.9535540007055,
+          "tokens": 47
+        },
+        {
+          "id": "q165",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2643.633948871866,
+          "tokens": 10
+        },
+        {
+          "id": "q166",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3060.275549069047,
+          "tokens": 10
+        },
+        {
+          "id": "q167",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3525.773041881621,
+          "tokens": 10
+        },
+        {
+          "id": "q168",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3260.416141944006,
+          "tokens": 10
+        },
+        {
+          "id": "q169",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2113.8188980985433,
+          "tokens": 10
+        },
+        {
+          "id": "q170",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2906.321251997724,
+          "tokens": 10
+        },
+        {
+          "id": "q171",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3085.7600399758667,
+          "tokens": 10
+        },
+        {
+          "id": "q172",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3353.292715968564,
+          "tokens": 10
+        },
+        {
+          "id": "q173",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2474.2053400259465,
+          "tokens": 10
+        },
+        {
+          "id": "q174",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2362.358219921589,
+          "tokens": 10
+        },
+        {
+          "id": "q175",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2067.7514530252665,
+          "tokens": 10
+        },
+        {
+          "id": "q176",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2806.931462138891,
+          "tokens": 10
+        },
+        {
+          "id": "q177",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2439.8672671522945,
+          "tokens": 10
+        },
+        {
+          "id": "q178",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2451.8368900753558,
+          "tokens": 10
+        },
+        {
+          "id": "q179",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3360.943774925545,
+          "tokens": 10
+        },
+        {
+          "id": "q180",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2651.6658649779856,
+          "tokens": 10
+        },
+        {
+          "id": "q181",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 1889.0359681099653,
+          "tokens": 10
+        },
+        {
+          "id": "q182",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2515.8264501951635,
+          "tokens": 10
+        },
+        {
+          "id": "q183",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 3624.3141260929406,
+          "tokens": 10
+        },
+        {
+          "id": "q184",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2581.9223090074956,
+          "tokens": 10
+        },
+        {
+          "id": "q185",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2018.8569789752364,
+          "tokens": 10
+        },
+        {
+          "id": "q186",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2830.255189910531,
+          "tokens": 10
+        },
+        {
+          "id": "q187",
+          "hops": 3,
+          "correctness": 0,
+          "citation_precision": 1.0,
+          "citation_recall": 0.0,
+          "latency_ms": 2286.4127790089697,
+          "tokens": 10
+        },
+        {
+          "id": "q188",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1812.2399589046836,
+          "tokens": 10
+        },
+        {
+          "id": "q189",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1575.266211060807,
+          "tokens": 10
+        },
+        {
+          "id": "q190",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1861.3127281423658,
+          "tokens": 10
+        },
+        {
+          "id": "q191",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1605.3943908773363,
+          "tokens": 10
+        },
+        {
+          "id": "q192",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1679.1365901008248,
+          "tokens": 10
+        },
+        {
+          "id": "q193",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1555.660512065515,
+          "tokens": 10
+        },
+        {
+          "id": "q194",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1669.0855300985277,
+          "tokens": 10
+        },
+        {
+          "id": "q195",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1763.976066140458,
+          "tokens": 10
+        },
+        {
+          "id": "q196",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1881.3559028785676,
+          "tokens": 10
+        },
+        {
+          "id": "q197",
+          "hops": 0,
+          "correctness": 4,
+          "citation_precision": 1.0,
+          "citation_recall": 1.0,
+          "latency_ms": 1832.9005679115653,
+          "tokens": 10
         }
       ]
     }
