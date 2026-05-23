@@ -92,9 +92,7 @@ def graphify_cmd(
     store.connect()
     try:
         if reextract:
-            with store._conn() as c, c.cursor() as cur:
-                cur.execute("DELETE FROM Ingest_Ledger")
-                c.commit()
+            store.clear_ingest_ledger()
 
         # Task 13 ships the real embedding backend. Until then, the CLI
         # imports a per-cfg backend selector. For test isolation we

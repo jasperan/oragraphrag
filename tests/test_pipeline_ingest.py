@@ -2,7 +2,9 @@ import numpy as np
 import pytest
 
 from oragraphrag.config import Config
+from oragraphrag.graph import GraphStoreError
 from oragraphrag.ingest import Buffer
+from oragraphrag.ingest_records import IngestWriteStats
 from oragraphrag.pipeline_ingest import IngestPipeline
 
 
@@ -47,6 +49,7 @@ class _SpyGraph:
         self.props: list[bytes] = []
         self.rels: list[tuple] = []
         self.ledger: set[str] = set()
+        self.ingest_units = []
 
     def upsert_entity(self, *, name, kind, embedding, source_id="default"):
         eid = self.entities.setdefault(name, f"E{len(self.entities)}".encode())
@@ -80,6 +83,46 @@ class _SpyGraph:
     def ledger_add(self, h, *, doc_id, section_path):
         self.ledger.add(h)
 
+    def ingest_buffer(self, unit):
+        self.ingest_units.append(unit)
+        entity_ids = {
+            entity.name: self.upsert_entity(
+                name=entity.name,
+                kind=entity.kind,
+                embedding=entity.embedding,
+                source_id=unit.source_id,
+            )
+            for entity in unit.entities
+        }
+        rel_count = 0
+        for prop in unit.propositions:
+            pid = self.upsert_proposition(
+                text=prop.text,
+                source_doc=unit.doc_id,
+                source_span=unit.section_path,
+                embedding=prop.embedding,
+                source_id=unit.source_id,
+            )
+            for triple in prop.triples:
+                base = min(1.0, 0.5 + 0.5 * triple.confidence)
+                self.upsert_rel(
+                    entity_ids[triple.subject],
+                    entity_ids[triple.object],
+                    predicate=triple.predicate,
+                    ontology_axis=triple.ontology_axis,
+                    base_weight=base,
+                    support_prop_id=pid,
+                    source_id=unit.source_id,
+                )
+                rel_count += 1
+        for span_hash in unit.span_hashes:
+            self.ledger_add(span_hash, doc_id=unit.doc_id, section_path=unit.section_path)
+        return IngestWriteStats(
+            entities=len(unit.entities),
+            propositions=len(unit.propositions),
+            rels=rel_count,
+        )
+
 
 @pytest.mark.asyncio
 async def test_pipeline_inserts_entities_props_and_rels():
@@ -103,6 +146,37 @@ async def test_pipeline_inserts_entities_props_and_rels():
     assert stats["propositions"] == 1
     assert stats["rels"] == 1
     assert stats["skipped"] == 0
+
+
+@pytest.mark.asyncio
+async def test_pipeline_delegates_graph_writes_to_one_ingest_unit():
+    cfg = Config()
+    cfg.embeddings.dim = 8
+    g = _SpyGraph()
+    p = IngestPipeline(
+        cfg=cfg,
+        graph=g,
+        embedder=_StubEmbedder(),
+        extractor=_StubExtractor(),
+        source_id="src_test",
+    )
+    buf = Buffer(
+        doc_id="d.md",
+        section_path="Hello",
+        text="alpha causes beta.",
+        span_hashes=["h1"],
+    )
+
+    await p.run([buf])
+
+    assert len(g.ingest_units) == 1
+    unit = g.ingest_units[0]
+    assert unit.doc_id == "d.md"
+    assert unit.section_path == "Hello"
+    assert unit.span_hashes == ("h1",)
+    assert unit.source_id == "src_test"
+    assert [entity.name for entity in unit.entities] == ["alpha", "beta"]
+    assert [prop.text for prop in unit.propositions] == ["alpha causes beta."]
 
 
 @pytest.mark.asyncio
@@ -322,6 +396,26 @@ async def test_pipeline_one_bad_buffer_does_not_abort_the_rest(tmp_path, monkeyp
     assert rec["span_hashes"] == ["h0"]
     assert rec["error_type"] == "ExtractionError"
     assert "synthetic" in rec["error_message"]
+
+
+@pytest.mark.asyncio
+async def test_pipeline_graph_store_error_does_not_ledger_failed_buffer(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    class _FailingGraph(_SpyGraph):
+        def ingest_buffer(self, unit):
+            raise GraphStoreError("write failed")
+
+    cfg = Config()
+    cfg.embeddings.dim = 8
+    g = _FailingGraph()
+    p = IngestPipeline(cfg=cfg, graph=g, embedder=_StubEmbedder(), extractor=_StubExtractor())
+    buf = Buffer(doc_id="d.md", section_path="s", text="t", span_hashes=["h"])
+
+    stats = await p.run([buf])
+
+    assert stats["failed"] == 1
+    assert "h" not in g.ledger
 
 
 @pytest.mark.asyncio

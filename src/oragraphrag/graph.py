@@ -16,6 +16,7 @@ from tenacity import (
 )
 
 from oragraphrag.config import Config
+from oragraphrag.ingest_records import IngestUnit, IngestWriteStats
 
 # Cap support_propositions to avoid unbounded JSON growth per edge under
 # repeated assertions of the same triple. Keep the most-recent N hex ids.
@@ -29,6 +30,10 @@ _DROP_OK_ERROR_CODES = {942, 1418, 4043, 42421, 65042}
 # ORA-04043: object does not exist
 # ORA-42421: property graph does not exist
 # ORA-65042: graph does not exist (alt code seen in some 23ai releases)
+
+
+class GraphStoreError(RuntimeError):
+    """Store-level error raised when a graph write unit cannot be completed."""
 
 
 def _is_drop_target_missing(e: oracledb.DatabaseError) -> bool:
@@ -177,36 +182,52 @@ class GraphStore:
     ) -> bytes:
         with self._conn() as c, c.cursor() as cur:
             try:
-                cur.execute(
-                    "SELECT id FROM Entity WHERE LOWER(name) = LOWER(:n)", n=name
+                eid = self._upsert_entity(
+                    cur,
+                    name=name,
+                    kind=kind,
+                    embedding=embedding,
+                    source_id=source_id,
                 )
-                row = cur.fetchone()
-                if row:
-                    eid = row[0]
-                    cur.execute(
-                        "UPDATE Entity SET mention_count = mention_count + 1, "
-                        "embedding = :v, source_id = :sid WHERE id = :id",
-                        v=_vec(embedding),
-                        sid=source_id,
-                        id=eid,
-                    )
-                else:
-                    out_id = cur.var(oracledb.DB_TYPE_RAW)
-                    cur.execute(
-                        "INSERT INTO Entity (name, kind, embedding, source_id) "
-                        "VALUES (:n, :k, :v, :sid) RETURNING id INTO :id",
-                        n=name,
-                        k=kind,
-                        v=_vec(embedding),
-                        sid=source_id,
-                        id=out_id,
-                    )
-                    eid = out_id.getvalue()[0]
                 c.commit()
                 return eid
             except Exception:
                 c.rollback()
                 raise
+
+    def _upsert_entity(
+        self,
+        cur,
+        *,
+        name: str,
+        kind: str,
+        embedding: list[float],
+        source_id: str,
+    ) -> bytes:
+        cur.execute("SELECT id FROM Entity WHERE LOWER(name) = LOWER(:n)", n=name)
+        row = cur.fetchone()
+        if row:
+            eid = row[0]
+            cur.execute(
+                "UPDATE Entity SET mention_count = mention_count + 1, "
+                "embedding = :v, source_id = :sid WHERE id = :id",
+                v=_vec(embedding),
+                sid=source_id,
+                id=eid,
+            )
+            return eid
+
+        out_id = cur.var(oracledb.DB_TYPE_RAW)
+        cur.execute(
+            "INSERT INTO Entity (name, kind, embedding, source_id) "
+            "VALUES (:n, :k, :v, :sid) RETURNING id INTO :id",
+            n=name,
+            k=kind,
+            v=_vec(embedding),
+            sid=source_id,
+            id=out_id,
+        )
+        return out_id.getvalue()[0]
 
     def upsert_proposition(
         self,
@@ -219,22 +240,42 @@ class GraphStore:
     ) -> bytes:
         with self._conn() as c, c.cursor() as cur:
             try:
-                out_id = cur.var(oracledb.DB_TYPE_RAW)
-                cur.execute(
-                    "INSERT INTO Proposition (text, source_doc, source_span, embedding, source_id) "
-                    "VALUES (:t, :d, :s, :v, :sid) RETURNING id INTO :id",
-                    t=text,
-                    d=source_doc,
-                    s=source_span,
-                    v=_vec(embedding),
-                    sid=source_id,
-                    id=out_id,
+                pid = self._upsert_proposition(
+                    cur,
+                    text=text,
+                    source_doc=source_doc,
+                    source_span=source_span,
+                    embedding=embedding,
+                    source_id=source_id,
                 )
                 c.commit()
-                return out_id.getvalue()[0]
+                return pid
             except Exception:
                 c.rollback()
                 raise
+
+    def _upsert_proposition(
+        self,
+        cur,
+        *,
+        text: str,
+        source_doc: str,
+        source_span: str,
+        embedding: list[float],
+        source_id: str,
+    ) -> bytes:
+        out_id = cur.var(oracledb.DB_TYPE_RAW)
+        cur.execute(
+            "INSERT INTO Proposition (text, source_doc, source_span, embedding, source_id) "
+            "VALUES (:t, :d, :s, :v, :sid) RETURNING id INTO :id",
+            t=text,
+            d=source_doc,
+            s=source_span,
+            v=_vec(embedding),
+            sid=source_id,
+            id=out_id,
+        )
+        return out_id.getvalue()[0]
 
     @retry(
         retry=retry_if_exception_type(oracledb.IntegrityError),
@@ -253,7 +294,37 @@ class GraphStore:
         support_prop_id: bytes,
         source_id: str = "default",
     ) -> None:
-        """Insert or update a REL row keyed on (src_id, dst_id, predicate).
+        """Insert or update a REL row keyed on (src_id, dst_id, predicate)."""
+        with self._conn() as c, c.cursor() as cur:
+            try:
+                self._upsert_rel(
+                    cur,
+                    src_id,
+                    dst_id,
+                    predicate=predicate,
+                    ontology_axis=ontology_axis,
+                    base_weight=base_weight,
+                    support_prop_id=support_prop_id,
+                    source_id=source_id,
+                )
+                c.commit()
+            except Exception:
+                c.rollback()
+                raise
+
+    def _upsert_rel(
+        self,
+        cur,
+        src_id: bytes,
+        dst_id: bytes,
+        *,
+        predicate: str,
+        ontology_axis: str,
+        base_weight: float,
+        support_prop_id: bytes,
+        source_id: str,
+    ) -> None:
+        """Insert or update a REL row inside the caller's transaction.
 
         Concurrency model: SELECT ... FOR UPDATE serializes concurrent writers
         on the same (src, dst, predicate) triple inside the transaction. The
@@ -271,95 +342,156 @@ class GraphStore:
         if axes disagree, the most-frequent axis wins; ties broken by most-recent.
         """
         sp_hex = support_prop_id.hex()
+        # FOR UPDATE serializes concurrent writers on the same triple.
+        # On a fresh row, the unique index gates the INSERT race.
+        cur.execute(
+            """
+            SELECT id, base_weight, support_propositions, support_axis_counts,
+                   ontology_axis
+            FROM Rel
+            WHERE src_id = :s AND dst_id = :d AND predicate = :p
+            FOR UPDATE
+            """,
+            s=src_id,
+            d=dst_id,
+            p=predicate,
+        )
+        row = cur.fetchone()
+
+        if row is None:
+            # No existing row. INSERT may race with another writer; the
+            # unique constraint surfaces that as IntegrityError, the
+            # retry decorator restarts from the SELECT.
+            cur.execute(
+                """
+                INSERT INTO Rel (
+                    src_id, dst_id, predicate, ontology_axis, base_weight,
+                    support_propositions, support_axis_counts, source_id
+                ) VALUES (
+                    :s, :d, :p, :a, :bw,
+                    :props, :counts, :sid
+                )
+                """,
+                s=src_id,
+                d=dst_id,
+                p=predicate,
+                a=ontology_axis,
+                bw=base_weight,
+                props=json.dumps([sp_hex]),
+                counts=json.dumps({ontology_axis: 1}),
+                sid=source_id,
+            )
+            return
+
+        _, old_bw, old_props_lob, old_counts_lob, _old_axis = row
+        support_props: list[str] = self._read_json(old_props_lob) or []
+        axis_counts: dict[str, int] = self._read_json(old_counts_lob) or {}
+
+        # Append proposition id without unbounded growth: de-dup and
+        # cap at _MAX_SUPPORT_PROPS most-recent ids.
+        if sp_hex not in support_props:
+            support_props.append(sp_hex)
+            if len(support_props) > _MAX_SUPPORT_PROPS:
+                support_props = support_props[-_MAX_SUPPORT_PROPS:]
+
+        axis_counts[ontology_axis] = int(axis_counts.get(ontology_axis, 0)) + 1
+
+        # Most-frequent axis wins; ties broken by current-call assertion
+        # (matches spec §5 step 5).
+        best_axis = ontology_axis
+        best_count = axis_counts[ontology_axis]
+        for k, v in axis_counts.items():
+            if int(v) > best_count:
+                best_axis = k
+                best_count = int(v)
+
+        new_bw = (float(old_bw) + float(base_weight)) / 2.0
+
+        cur.execute(
+            """
+            UPDATE Rel SET
+                base_weight = :bw,
+                ontology_axis = :a,
+                support_propositions = :props,
+                support_axis_counts = :counts,
+                source_id = :sid,
+                last_seen_at = SYSTIMESTAMP
+            WHERE src_id = :s AND dst_id = :d AND predicate = :p
+            """,
+            bw=new_bw,
+            a=best_axis,
+            props=json.dumps(support_props),
+            counts=json.dumps({k: int(v) for k, v in axis_counts.items()}),
+            sid=source_id,
+            s=src_id,
+            d=dst_id,
+            p=predicate,
+        )
+
+    def ingest_buffer(self, unit: IngestUnit) -> IngestWriteStats:
+        """Write graph rows and ledger hashes for one extracted buffer atomically."""
+        try:
+            return self._ingest_buffer_once(unit)
+        except oracledb.DatabaseError as e:
+            raise GraphStoreError("failed to ingest buffer atomically") from e
+
+    @retry(
+        retry=retry_if_exception_type(oracledb.IntegrityError),
+        stop=stop_after_attempt(3),
+        wait=wait_random_exponential(multiplier=0.05, max=0.5),
+        reraise=True,
+    )
+    def _ingest_buffer_once(self, unit: IngestUnit) -> IngestWriteStats:
         with self._conn() as c, c.cursor() as cur:
             try:
-                # FOR UPDATE serializes concurrent writers on the same triple.
-                # On a fresh row, the unique index gates the INSERT race.
-                cur.execute(
-                    """
-                    SELECT id, base_weight, support_propositions, support_axis_counts,
-                           ontology_axis
-                    FROM Rel
-                    WHERE src_id = :s AND dst_id = :d AND predicate = :p
-                    FOR UPDATE
-                    """,
-                    s=src_id,
-                    d=dst_id,
-                    p=predicate,
-                )
-                row = cur.fetchone()
+                entity_ids: dict[str, bytes] = {}
+                for entity in unit.entities:
+                    entity_ids[entity.name] = self._upsert_entity(
+                        cur,
+                        name=entity.name,
+                        kind=entity.kind,
+                        embedding=entity.embedding,
+                        source_id=unit.source_id,
+                    )
 
-                if row is None:
-                    # No existing row. INSERT may race with another writer; the
-                    # unique constraint surfaces that as IntegrityError, the
-                    # retry decorator restarts from the SELECT.
-                    cur.execute(
-                        """
-                        INSERT INTO Rel (
-                            src_id, dst_id, predicate, ontology_axis, base_weight,
-                            support_propositions, support_axis_counts, source_id
-                        ) VALUES (
-                            :s, :d, :p, :a, :bw,
-                            :props, :counts, :sid
+                rels = 0
+                for prop in unit.propositions:
+                    pid = self._upsert_proposition(
+                        cur,
+                        text=prop.text,
+                        source_doc=unit.doc_id,
+                        source_span=unit.section_path,
+                        embedding=prop.embedding,
+                        source_id=unit.source_id,
+                    )
+                    for triple in prop.triples:
+                        base = min(1.0, 0.5 + 0.5 * float(triple.confidence))
+                        self._upsert_rel(
+                            cur,
+                            entity_ids[triple.subject],
+                            entity_ids[triple.object],
+                            predicate=triple.predicate,
+                            ontology_axis=triple.ontology_axis,
+                            base_weight=base,
+                            support_prop_id=pid,
+                            source_id=unit.source_id,
                         )
-                        """,
-                        s=src_id,
-                        d=dst_id,
-                        p=predicate,
-                        a=ontology_axis,
-                        bw=base_weight,
-                        props=json.dumps([sp_hex]),
-                        counts=json.dumps({ontology_axis: 1}),
-                        sid=source_id,
-                    )
-                else:
-                    _, old_bw, old_props_lob, old_counts_lob, _old_axis = row
-                    support_props: list[str] = self._read_json(old_props_lob) or []
-                    axis_counts: dict[str, int] = self._read_json(old_counts_lob) or {}
+                        rels += 1
 
-                    # Append proposition id without unbounded growth: de-dup and
-                    # cap at _MAX_SUPPORT_PROPS most-recent ids.
-                    if sp_hex not in support_props:
-                        support_props.append(sp_hex)
-                        if len(support_props) > _MAX_SUPPORT_PROPS:
-                            support_props = support_props[-_MAX_SUPPORT_PROPS:]
-
-                    axis_counts[ontology_axis] = (
-                        int(axis_counts.get(ontology_axis, 0)) + 1
+                for span_hash in unit.span_hashes:
+                    self._ledger_add(
+                        cur,
+                        span_hash,
+                        doc_id=unit.doc_id,
+                        section_path=unit.section_path,
                     )
 
-                    # Most-frequent axis wins; ties broken by current-call
-                    # assertion (matches spec §5 step 5).
-                    best_axis = ontology_axis
-                    best_count = axis_counts[ontology_axis]
-                    for k, v in axis_counts.items():
-                        if int(v) > best_count:
-                            best_axis = k
-                            best_count = int(v)
-
-                    new_bw = (float(old_bw) + float(base_weight)) / 2.0
-
-                    cur.execute(
-                        """
-                        UPDATE Rel SET
-                            base_weight = :bw,
-                            ontology_axis = :a,
-                            support_propositions = :props,
-                            support_axis_counts = :counts,
-                            source_id = :sid,
-                            last_seen_at = SYSTIMESTAMP
-                        WHERE src_id = :s AND dst_id = :d AND predicate = :p
-                        """,
-                        bw=new_bw,
-                        a=best_axis,
-                        props=json.dumps(support_props),
-                        counts=json.dumps({k: int(v) for k, v in axis_counts.items()}),
-                        sid=source_id,
-                        s=src_id,
-                        d=dst_id,
-                        p=predicate,
-                    )
                 c.commit()
+                return IngestWriteStats(
+                    entities=len(unit.entities),
+                    propositions=len(unit.propositions),
+                    rels=rels,
+                )
             except Exception:
                 c.rollback()
                 raise
@@ -539,19 +671,39 @@ class GraphStore:
         """Record a span hash as ingested. Idempotent on conflict."""
         with self._conn() as c, c.cursor() as cur:
             try:
-                cur.execute(
-                    "INSERT INTO Ingest_Ledger (span_hash, doc_id, section_path) "
-                    "VALUES (:h, :d, :s)",
-                    h=span_hash,
-                    d=doc_id,
-                    s=section_path,
-                )
+                self._ledger_add(cur, span_hash, doc_id=doc_id, section_path=section_path)
                 c.commit()
-            except oracledb.IntegrityError:
-                c.rollback()  # row already exists; idempotent skip
             except Exception:
                 c.rollback()
                 raise
+
+    def clear_ingest_ledger(self) -> None:
+        """Delete all ingest ledger rows through the graph-store boundary."""
+        with self._conn() as c, c.cursor() as cur:
+            try:
+                cur.execute("DELETE FROM Ingest_Ledger")
+                c.commit()
+            except oracledb.DatabaseError as e:
+                c.rollback()
+                raise GraphStoreError("failed to clear ingest ledger") from e
+
+    @staticmethod
+    def _ledger_add(cur, span_hash: str, *, doc_id: str, section_path: str) -> None:
+        cur.execute(
+            """
+            MERGE INTO Ingest_Ledger dst
+            USING (
+                SELECT :h AS span_hash, :d AS doc_id, :s AS section_path FROM dual
+            ) src
+            ON (dst.span_hash = src.span_hash)
+            WHEN NOT MATCHED THEN
+                INSERT (span_hash, doc_id, section_path)
+                VALUES (src.span_hash, src.doc_id, src.section_path)
+            """,
+            h=span_hash,
+            d=doc_id,
+            s=section_path,
+        )
 
     def iter_propositions_with_edges(
         self,
@@ -650,5 +802,3 @@ class GraphStore:
                 }
                 for r in cur.fetchall()
             ]
-
-
