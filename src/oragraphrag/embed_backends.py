@@ -32,7 +32,7 @@ class OllamaEmbedBackend:
     """One request per text against Ollama's /api/embeddings endpoint.
 
     Ollama doesn't expose a batch embeddings API today, so concurrent text
-    embedding happens at the caller level (Task 8's 8-way pipeline) — this
+    embedding happens at the caller level (the 8-way ingest pipeline) — this
     backend itself is sequential per call.
     """
 

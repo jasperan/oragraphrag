@@ -524,27 +524,19 @@ class GraphStore:
         k: int,
         source_filter: str | None = None,
     ) -> list[dict]:
+        where = "" if source_filter is None else "WHERE source_id = :sid"
+        binds: dict = {"q": _vec(query_vec), "k": k}
+        if source_filter is not None:
+            binds["sid"] = source_filter
         with self._conn() as c, c.cursor() as cur:
-            if source_filter is None:
-                cur.execute(
-                    """
-                    SELECT id, name, VECTOR_DISTANCE(embedding, :q, COSINE) AS d
-                    FROM Entity ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
-                    """,
-                    q=_vec(query_vec),
-                    k=k,
-                )
-            else:
-                cur.execute(
-                    """
-                    SELECT id, name, VECTOR_DISTANCE(embedding, :q, COSINE) AS d
-                    FROM Entity WHERE source_id = :sid
-                    ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
-                    """,
-                    q=_vec(query_vec),
-                    sid=source_filter,
-                    k=k,
-                )
+            cur.execute(
+                f"""
+                SELECT id, name, VECTOR_DISTANCE(embedding, :q, COSINE) AS d
+                FROM Entity {where}
+                ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
+                """,
+                **binds,
+            )
             return [
                 {"id": r[0], "name": r[1], "distance": float(r[2])} for r in cur.fetchall()
             ]
@@ -556,29 +548,20 @@ class GraphStore:
         k: int,
         source_filter: str | None = None,
     ) -> list[dict]:
+        where = "" if source_filter is None else "WHERE source_id = :sid"
+        binds: dict = {"q": _vec(query_vec), "k": k}
+        if source_filter is not None:
+            binds["sid"] = source_filter
         with self._conn() as c, c.cursor() as cur:
-            if source_filter is None:
-                cur.execute(
-                    """
-                    SELECT id, source_doc, source_span,
-                           VECTOR_DISTANCE(embedding, :q, COSINE) AS d
-                    FROM Proposition ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
-                    """,
-                    q=_vec(query_vec),
-                    k=k,
-                )
-            else:
-                cur.execute(
-                    """
-                    SELECT id, source_doc, source_span,
-                           VECTOR_DISTANCE(embedding, :q, COSINE) AS d
-                    FROM Proposition WHERE source_id = :sid
-                    ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
-                    """,
-                    q=_vec(query_vec),
-                    sid=source_filter,
-                    k=k,
-                )
+            cur.execute(
+                f"""
+                SELECT id, source_doc, source_span,
+                       VECTOR_DISTANCE(embedding, :q, COSINE) AS d
+                FROM Proposition {where}
+                ORDER BY d FETCH APPROX FIRST :k ROWS ONLY
+                """,
+                **binds,
+            )
             return [
                 {
                     "id": r[0],

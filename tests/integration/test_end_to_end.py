@@ -58,7 +58,6 @@ oracle:
 retrieval:
   seed_k_entities: 4
   seed_k_propositions: 8
-  max_subgraph_nodes: 64
   max_subgraph_edges: 256
   amplitude:
     alpha: 8.0
@@ -74,7 +73,6 @@ ingest:
   span_max_tokens: 1200
   section_overlap_tokens: 100
   extract_concurrency: 2
-  canonicalize_threshold: 0.92
 """.strip()
     )
     corpus = Path(__file__).parent / "fixtures" / "mini_corpus"

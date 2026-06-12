@@ -2,7 +2,7 @@
 
 Uses the same Oracle 23ai vector store and the same LLM adapter so the
 comparison isolates retrieval quality, not LLM identity. Chunks are the
-existing Proposition rows from Task 5's schema — naive RAG operates on
+existing Proposition rows — naive RAG operates on
 proposition-level retrieval without the graph walk.
 """
 

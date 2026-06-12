@@ -1,7 +1,7 @@
 """Embedding adapter. Wraps Oracle 23ai VECTOR_EMBEDDING / Ollama / sentence-transformers.
 
-Concrete backends are wired in Task 13 (`embed_backends.py`). Until then,
-callers inject a backend that exposes `dim: int` and `async embed(texts) -> np.ndarray`.
+Concrete backends live in `embed_backends.py`. Callers inject a backend that
+exposes `dim: int` and `async embed(texts) -> np.ndarray`.
 """
 
 from __future__ import annotations
@@ -59,9 +59,9 @@ class Embedder:
         Zero-norm rows are not a legitimate output of an embedding model on
         non-empty text — they indicate an upstream bug (e.g., empty string
         leaked past the buffer-tokenizer, or backend returned a sentinel).
-        Surfacing the failure at the normalize boundary keeps Task 8's
-        8-way concurrent ingest from silently producing nonsense activations
-        in Task 9.
+        Surfacing the failure at the normalize boundary keeps the 8-way
+        concurrent ingest pipeline from silently producing nonsense
+        activations in the retrieval reweighting kernel.
         """
         n = np.linalg.norm(a, axis=1, keepdims=True)
         if np.any(n == 0):
@@ -77,8 +77,9 @@ async def build_axis_vectors(embedder: _EmbedBackend | Embedder) -> dict[str, np
     """Embed the canonical description of each ontology axis once.
 
     Returns a dict {axis_name: np.ndarray(dim,)} suitable for storage in the
-    Oracle `Ontology_Axis` table at `init-db` time. Task 9 renormalizes both
-    the query vector and each axis vector when computing the cosine projection,
+    Oracle `Ontology_Axis` table at `init-db` time. The reweighting kernel
+    renormalizes both the query vector and each axis vector when computing
+    the cosine projection,
     so the storage form (raw vs L2-normalized) does not affect downstream math.
 
     Accepts either a raw backend or a full Embedder. Both must expose an

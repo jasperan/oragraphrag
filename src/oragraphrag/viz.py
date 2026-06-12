@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from oragraphrag.axes import ONTOLOGY_AXIS_NAMES
+
 
 def render_subgraph_html(
     edges: list[dict],
@@ -82,7 +84,7 @@ def amplitude_heatmap_png(
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     questions = [q for q, _ in amps_per_question]
-    axes_names = ["causal", "taxonomic", "temporal", "definitional", "exemplification"]
+    axes_names = list(ONTOLOGY_AXIS_NAMES)
     mat = np.array(
         [[float(a.get(n, 0.0)) for n in axes_names] for _, a in amps_per_question]
     )

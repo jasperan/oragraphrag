@@ -1,7 +1,7 @@
 """Orchestrates: buffers -> extract -> canonicalize entities -> embed -> graph upserts.
 
-Idempotency lives in the IngestLedger (Task 5 schema): each buffer's span
-hashes are checked before extraction; on success, all hashes are appended.
+Idempotency lives in the IngestLedger: each buffer's span hashes are checked
+before extraction; on success, all hashes are appended.
 A buffer is skipped only when ALL its hashes are already ledgered.
 
 Concurrency is bounded by `cfg.ingest.extract_concurrency` via an asyncio

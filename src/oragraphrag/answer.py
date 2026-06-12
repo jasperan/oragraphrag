@@ -1,6 +1,6 @@
 """Render the answer prompt, call the LLM, map [P#] citations back to propositions.
 
-Task 11's query orchestrator calls `Answerer.answer(question, propositions)`
+The query orchestrator calls `Answerer.answer(question, propositions)`
 after retrieving propositions from the graph walk. Returns an AnswerResult
 with the LLM's text and a list of Citation objects that map [P#] markers
 in the text back to the (proposition_id, source_doc, source_span) triple.
@@ -64,7 +64,7 @@ class Answerer:
     def _truncate_to_budget(self, question: str, propositions: list[dict]) -> list[dict]:
         """Drop trailing propositions until the rendered prompt fits the budget.
 
-        Uses a char/4 token estimate consistent with Task 6's ingest buffer
+        Uses a char/4 token estimate consistent with the ingest buffer
         sizing. Returns the (possibly shortened) propositions list; the input
         is not mutated.
         """
@@ -91,9 +91,9 @@ class Answerer:
             return AnswerResult(text=_NO_INFO, citations=[])
 
         # Truncate from the tail if the rendered prompt would exceed the budget.
-        # Propositions arrive in score order from Task 9, so the tail carries the
-        # weakest evidence — safe to drop. The char/4 token heuristic mirrors
-        # Task 6's ingest buffering.
+        # Propositions arrive in score order from the retrieval kernel, so the
+        # tail carries the weakest evidence — safe to drop. The char/4 token
+        # heuristic mirrors the ingest buffering.
         propositions = self._truncate_to_budget(question, propositions)
 
         items = [

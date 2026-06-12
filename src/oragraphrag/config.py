@@ -12,7 +12,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class OciGrokConfig(BaseModel):
     compartment_ocid: str = ""
-    endpoint_id: str = ""
     model: str = "grok-4-3"
     region: str = "us-chicago-1"
 
@@ -23,7 +22,7 @@ class OllamaConfig(BaseModel):
 
 
 class LlmConfig(BaseModel):
-    provider: Literal["oci_grok", "ollama", "openai_compat"] = "oci_grok"
+    provider: Literal["oci_grok", "ollama"] = "oci_grok"
     oci_grok: OciGrokConfig = Field(default_factory=OciGrokConfig)
     ollama: OllamaConfig = Field(default_factory=OllamaConfig)
     fallback_on_outage: bool = False
@@ -59,7 +58,6 @@ class OracleConfig(BaseModel):
 class AmplitudeConfig(BaseModel):
     alpha: float = 8.0
     beta: float = 0.0
-    per_axis_overrides: dict[str, float] = Field(default_factory=dict)
 
 
 class PageRankConfig(BaseModel):
@@ -70,7 +68,6 @@ class PageRankConfig(BaseModel):
 class RetrievalConfig(BaseModel):
     seed_k_entities: int = 8
     seed_k_propositions: int = 16
-    max_subgraph_nodes: int = 256
     max_subgraph_edges: int = 2048
     amplitude: AmplitudeConfig = Field(default_factory=AmplitudeConfig)
     pagerank: PageRankConfig = Field(default_factory=PageRankConfig)
@@ -84,8 +81,6 @@ class IngestConfig(BaseModel):
     span_max_tokens: int = 1200
     section_overlap_tokens: int = 100
     extract_concurrency: int = 8
-    canonicalize_threshold: float = 0.92
-    hnsw_refresh_after_inserts: int = 1000
 
 
 class Config(BaseSettings):

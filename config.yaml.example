@@ -2,7 +2,6 @@ llm:
   provider: oci_grok
   oci_grok:
     compartment_ocid: ocid1.compartment.oc1..example
-    endpoint_id: ocid1.generativeaiendpoint.oc1.us-chicago-1.example
     model: grok-4-3
     region: us-chicago-1
   ollama:
@@ -30,12 +29,10 @@ oracle:
 retrieval:
   seed_k_entities: 8
   seed_k_propositions: 16
-  max_subgraph_nodes: 256
   max_subgraph_edges: 2048
   amplitude:
     alpha: 8.0
     beta: 0.0
-    per_axis_overrides: {}
   pagerank:
     damping: 0.85
     top_m_entities: 20
@@ -47,5 +44,3 @@ ingest:
   span_max_tokens: 1200
   section_overlap_tokens: 100
   extract_concurrency: 8
-  canonicalize_threshold: 0.92
-  hnsw_refresh_after_inserts: 1000

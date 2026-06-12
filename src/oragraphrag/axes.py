@@ -4,8 +4,8 @@ Each description is intentionally short and concrete so the embedding lands
 in a stable region of the model's space. Changing these requires running
 `oragraphrag init-db --rebuild` because the stored axis vectors will shift.
 
-Ordering matters: ONTOLOGY_AXIS_NAMES is used directly by Task 9's reweighting
-to iterate axes in a fixed sequence.
+Ordering matters: ONTOLOGY_AXIS_NAMES is used directly by the reweighting
+kernel (`retrieve.py`) to iterate axes in a fixed sequence.
 """
 
 ONTOLOGY_AXIS_NAMES: tuple[str, ...] = (
@@ -38,8 +38,8 @@ AXIS_DESCRIPTIONS: dict[str, str] = {
         "An instance of X is Y. X shows Y in practice."
     ),
 }
-# TODO(task-13): Once a real embedding backend lands, add an integration test
-# that asserts pairwise cosine between the 5 axis vectors is below ~0.85.
-# If two axes cluster (e.g., "definitional" and "taxonomic" can land close on
-# some models), expand the description with diverse vocabulary and structural
-# variety (definitions + concrete examples + contrast).
+# TODO: add an integration test asserting pairwise cosine between the 5 axis
+# vectors stays below ~0.85. If two axes cluster (e.g., "definitional" and
+# "taxonomic" can land close on some models), expand the description with
+# diverse vocabulary and structural variety (definitions + concrete examples
+# + contrast).

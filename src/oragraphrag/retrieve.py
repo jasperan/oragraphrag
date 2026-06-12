@@ -1,5 +1,5 @@
 """Query-time reweighting + spreading activation. Pure-Python compute over a
-bounded subgraph fetched from Oracle by Task 11's orchestrator.
+bounded subgraph fetched from Oracle by the query orchestrator.
 
 The four entry points compose as:
     amps = compute_amplitudes(query_vec, axis_vectors, alpha, beta)
@@ -162,7 +162,7 @@ def assemble_propositions(
     seed_sim is high. This enforces spec §6 Step 5's intent — the
     assembled propositions are surfaced by the reweighted graph walk, not
     by pure vector matches. Pure-vector-only retrieval is handled by the
-    seed retrieval at Task 11's Step 1, BEFORE the graph walk runs.
+    orchestrator's seed retrieval, BEFORE the graph walk runs.
     """
     prop_score: dict[bytes, float] = {}
     for e in edges:

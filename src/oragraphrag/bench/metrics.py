@@ -1,6 +1,6 @@
 """Bench metrics: LLM-as-judge correctness, citation P/R, recall@k.
 
-`_judge_call` is the async coroutine the runner uses. `score_correctness`
+`judge_call` is the async coroutine the runner uses. `score_correctness`
 is a synchronous wrapper for ad-hoc usage outside the harness. Citation
 P/R and recall@k are pure-Python set arithmetic — no I/O.
 """
@@ -19,7 +19,7 @@ _JUDGE_TMPL = Template(
 )
 
 
-async def _judge_call(question: str, gold: str, predicted: str, llm: Any) -> int:
+async def judge_call(question: str, gold: str, predicted: str, llm: Any) -> int:
     """Render the judge prompt, call the LLM, parse a 0-4 integer.
 
     Robust to LLM responses that include trailing prose or markdown:
@@ -39,17 +39,19 @@ async def _judge_call(question: str, gold: str, predicted: str, llm: Any) -> int
 
 
 def score_correctness(*, question: str, gold: str, predicted: str, llm: Any) -> int:
-    """Synchronous wrapper around _judge_call for ad-hoc / monkeypatched use."""
-    return asyncio.get_event_loop().run_until_complete(
-        _judge_call(question, gold, predicted, llm)
-    )
+    """Synchronous wrapper around judge_call for ad-hoc use outside the harness.
+
+    Must not be called from within a running event loop (use ``judge_call``
+    directly there); ``asyncio.run`` owns the loop for its duration.
+    """
+    return asyncio.run(judge_call(question, gold, predicted, llm))
 
 
 def _citation_match(gold_ref: str, pred_ref: str) -> bool:
     """Return True if a predicted citation matches a gold doc#section.
 
     Gold refs use a flat leaf section like `vectors.md#datatype`. Predicted
-    refs may carry the full markdown section hierarchy emitted by Task 6's
+    refs may carry the full markdown section hierarchy emitted by the ingest
     parser, e.g. `vectors.md#Vectors in Oracle Database 23ai / datatype`.
     A match is declared when the docs are identical and the pred's section
     path ends with the gold's section (case-insensitive, separator-tolerant).
@@ -71,7 +73,7 @@ def citation_pr(*, gold: Sequence[str], pred: Sequence[str]) -> tuple[float, flo
     """Return (precision, recall) over predicted vs gold citation sets.
 
     Uses _citation_match for tolerant comparison so the deep section paths
-    Task 6 emits (e.g. `vectors.md#Vectors in Oracle Database 23ai / datatype`)
+    the ingest parser emits (e.g. `vectors.md#Vectors in Oracle Database 23ai / datatype`)
     still match a flat gold reference (`vectors.md#datatype`).
 
     Sentinels:

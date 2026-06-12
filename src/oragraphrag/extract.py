@@ -66,7 +66,8 @@ def validate_payload(payload: Any) -> dict[str, Any]:
     """Strict schema validation. Raises ExtractionError on any deviation.
 
     Tighter than a generic JSON-schema lib so error messages name the exact
-    failing key — that's how Task 8 will route a bad chunk to the failure log.
+    failing key — that's how the ingest pipeline routes a bad chunk to the
+    failure log.
     """
     if not isinstance(payload, dict) or "propositions" not in payload:
         raise ExtractionError("payload is not a dict with a 'propositions' key")

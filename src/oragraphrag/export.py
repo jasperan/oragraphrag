@@ -30,17 +30,17 @@ def build_training_example(
     # Question synthesis: prefer the first edge's predicate for a concrete
     # noun-anchored prompt; otherwise fall back to a generic "state the
     # fact" framing.
-    subject = None
+    predicate = None
     for e in edge_rows:
         if e.get("predicate"):
-            subject = e["predicate"]
+            predicate = e["predicate"]
             break
 
     text = prop_row.get("text", "") or ""
-    if subject:
+    if predicate:
         prompt = (
             "Answer this question grounded in Oracle 23ai docs: "
-            f"What does the corpus say about {subject}?"
+            f"What does the corpus say about {predicate}?"
         )
     else:
         snippet = text[:60].rstrip(".") + ("..." if len(text) > 60 else "")

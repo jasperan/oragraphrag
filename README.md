@@ -10,7 +10,7 @@
 [![oracleagentmemory](https://img.shields.io/badge/PyPI-oracleagentmemory-blue.svg?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/oracleagentmemory/)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-/graphify-D97757.svg?style=for-the-badge&logo=anthropic&logoColor=white)](https://docs.claude.com/en/docs/claude-code)
 [![Version](https://img.shields.io/badge/version-0.1.0-brightgreen.svg?style=for-the-badge)](https://github.com/jasperan/oragraphrag/releases)
-[![Tests](https://img.shields.io/badge/tests-172_unit_+_12_integration-brightgreen.svg?style=for-the-badge)](#tests)
+[![Tests](https://img.shields.io/badge/tests-174_unit_+_17_integration-brightgreen.svg?style=for-the-badge)](#tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 </div>
@@ -190,7 +190,7 @@ The loop closes: **graphify → query → export → fine-tune → graphify with
 | `memory.py` | `oracleagentmemory` wrapper for per-source thread context |
 | `export.py` | Fine-tune JSONL exporter from the accumulated graph |
 | `viz.py` | pyvis subgraph renderer + matplotlib amplitude heatmap |
-| `bench/` | Benchmark harness (runner, metrics, judge, baselines) |
+| `bench/` | Benchmark harness (runner, metrics, baselines) |
 
 ## Demo notebook
 
@@ -199,13 +199,13 @@ The loop closes: **graphify → query → export → fine-tune → graphify with
 ## Tests
 
 ```bash
-# Unit tests (no DB, no LLM required) — 172 tests
+# Unit tests (no DB, no LLM required) — 174 tests
 pytest -m "not oracle and not llm"
 
-# Integration tests against live Oracle 23ai Free — 8 tests
-pytest -m oracle
+# Integration tests against live Oracle 23ai Free — 11 tests
+pytest -m "oracle and not llm"
 
-# Full end-to-end requires both Oracle + Ollama containers + LLM — 4 tests
+# Full end-to-end requires both Oracle + Ollama containers + LLM — 6 tests
 pytest -m "oracle and llm"
 ```
 

@@ -33,7 +33,7 @@ async def run(question: str, cfg: Config) -> dict:
                     f"{c.source_doc}#{c.source_span}" for c in result.answer.citations
                 ],
                 "latency_ms": float(sum(result.latency_ms.values())),
-                "tokens": len(result.answer.text.split()),  # rough; refine in Task 16
+                "tokens": len(result.answer.text.split()),  # rough word-count proxy
             }
     finally:
         store.close()

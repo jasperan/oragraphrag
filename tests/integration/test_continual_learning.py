@@ -42,7 +42,6 @@ oracle:
 retrieval:
   seed_k_entities: 16
   seed_k_propositions: 32
-  max_subgraph_nodes: 512
   max_subgraph_edges: 4096
 """.strip()
     )

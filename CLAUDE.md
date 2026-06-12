@@ -62,7 +62,7 @@ oragraphrag bench --suite benchmarks/suites/oracle_docs_qa.jsonl --systems naive
 | `pipeline_query.py` | Query orchestrator wiring all of the above |
 | `cli.py` | Typer CLI (`init-db | graphify | query | bench`) |
 | `viz.py` | pyvis subgraph + matplotlib amplitude heatmap |
-| `bench/` | Benchmark harness (runner, metrics, judge, baselines) |
+| `bench/` | Benchmark harness (runner, metrics, baselines) |
 
 ## Things NOT to change without a spec update
 

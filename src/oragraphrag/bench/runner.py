@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from oragraphrag.bench.baselines import REGISTRY
-from oragraphrag.bench.metrics import _judge_call, citation_pr
+from oragraphrag.bench.metrics import citation_pr, judge_call
 from oragraphrag.config import Config
 from oragraphrag.llm import LLM
 
@@ -60,7 +60,7 @@ async def run_suite(
             per_q: list[dict] = []
             for it in items:
                 out = await _run_one(system, it["question"], cfg)
-                score = await _judge_call(
+                score = await judge_call(
                     it["question"], it["gold_answer"], out["answer"], judge_llm
                 )
                 precision, recall = citation_pr(

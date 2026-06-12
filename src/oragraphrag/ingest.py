@@ -1,7 +1,7 @@
 """Walk a folder, parse files by type, emit normalized Spans, buffer to ~token-bounded chunks.
 
-Task 8 consumes the `Buffer` stream from `buffer_spans` and feeds each buffer's
-text to the LLM extractor. Span boundaries respect document section structure
+The ingest pipeline consumes the `Buffer` stream from `buffer_spans` and feeds
+each buffer's text to the LLM extractor. Span boundaries respect document section structure
 (markdown headings, PDF pages) so the extracted propositions stay localized.
 """
 
@@ -199,8 +199,8 @@ def buffer_spans(
                 cur_text = [tail]
                 cur_tokens = max(1, len(tail) // _TOKEN_APPROX)
                 # Keep the trailing span's hash so the next buffer's span_hashes
-                # acknowledges the overlap content. Without this, Task 8's ledger
-                # logic would misjudge "all spans already ledgered" because the
+                # acknowledges the overlap content. Without this, the pipeline's
+                # ledger logic would misjudge "all spans already ledgered" because the
                 # carried-over span's hash would be dropped from the buffer.
                 cur_hashes = cur_hashes[-1:]
             else:

@@ -1,6 +1,6 @@
 """End-to-end query: embed -> seeds -> subgraph -> reweight -> ppr -> assemble -> answer.
 
-Task 12's CLI calls `QueryPipeline.query(question)` per user query. The
+The CLI calls `QueryPipeline.query(question)` per user query. The
 pipeline reads the ontology axis vectors once at construction (loaded from
 Oracle by the caller) so subsequent queries don't re-embed the canonical
 axis descriptions.

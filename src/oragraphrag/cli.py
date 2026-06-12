@@ -36,6 +36,19 @@ def _load_config(path: Path | None) -> Config:
     return Config()
 
 
+def _resolve_source(source: str | None) -> str | None:
+    """Resolve a --source argument to a source_id.
+
+    Accepts either a literal ``src_<hex>`` id (passed through unchanged) or a
+    folder path (hashed via ``source_id_for_folder``). ``None`` stays ``None``.
+    """
+    if source is None:
+        return None
+    from oragraphrag.memory import source_id_for_folder
+
+    return source if source.startswith("src_") else source_id_for_folder(source)
+
+
 @app.command("init-db")
 def init_db_cmd(
     config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
@@ -54,7 +67,7 @@ def init_db_cmd(
         store.connect()
         try:
             # Use the real configured embedder so axis vectors are meaningful.
-            # Task 9's reweighting depends on these being real embeddings of
+            # The reweighting kernel depends on these being real embeddings of
             # the canonical axis descriptions, not zero vectors.
             emb = Embedder(cfg, backend=build_embed_backend(cfg, store))
             axes = await build_axis_vectors(emb)
@@ -94,17 +107,7 @@ def graphify_cmd(
         if reextract:
             store.clear_ingest_ledger()
 
-        # Task 13 ships the real embedding backend. Until then, the CLI
-        # imports a per-cfg backend selector. For test isolation we
-        # tolerate the absence of the backends module.
-        try:
-            from oragraphrag.embed_backends import build_embed_backend
-        except ImportError:
-            console.print(
-                "[yellow]Note: embed_backends module not present yet (Task 13). "
-                "graphify needs a real embedder backend.[/yellow]"
-            )
-            raise typer.Exit(1) from None
+        from oragraphrag.embed_backends import build_embed_backend
 
         emb = Embedder(cfg, backend=build_embed_backend(cfg, store))
         spans = walk_folder(folder)
@@ -165,12 +168,8 @@ def query_cmd(
     ),
 ) -> None:
     """Answer a question from the indexed corpus."""
-    from oragraphrag.memory import source_id_for_folder
-
     cfg = _load_config(config)
-    source_filter: str | None = None
-    if source is not None:
-        source_filter = source if source.startswith("src_") else source_id_for_folder(source)
+    source_filter = _resolve_source(source)
 
     if dry_run:
         console.print(f"dry run: would query [bold]{question!r}[/bold]")
@@ -180,18 +179,10 @@ def query_cmd(
         raise typer.Exit(0)
 
     from oragraphrag.embed import Embedder, build_axis_vectors
+    from oragraphrag.embed_backends import build_embed_backend
     from oragraphrag.graph import GraphStore
     from oragraphrag.llm import LLM
     from oragraphrag.pipeline_query import QueryPipeline
-
-    try:
-        from oragraphrag.embed_backends import build_embed_backend
-    except ImportError:
-        console.print(
-            "[yellow]Note: embed_backends module not present yet (Task 13). "
-            "query needs a real embedder backend.[/yellow]"
-        )
-        raise typer.Exit(1) from None
 
     store = GraphStore(cfg)
     store.connect()
@@ -267,14 +258,9 @@ def export_cmd(
 
     from oragraphrag.export import export_finetune
     from oragraphrag.graph import GraphStore
-    from oragraphrag.memory import source_id_for_folder
 
     cfg = _load_config(config)
-    source_filter: str | None = None
-    if source is not None:
-        source_filter = (
-            source if source.startswith("src_") else source_id_for_folder(source)
-        )
+    source_filter = _resolve_source(source)
 
     store = GraphStore(cfg)
     store.connect()
@@ -297,14 +283,7 @@ def bench_cmd(
     config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
 ) -> None:
     """Run the benchmark harness across one or more baselines."""
-    try:
-        from oragraphrag.bench.runner import run_suite
-    except ImportError:
-        console.print(
-            "[yellow]bench harness not implemented yet (Task 15). "
-            "Re-run after Task 15 lands.[/yellow]"
-        )
-        raise typer.Exit(1) from None
+    from oragraphrag.bench.runner import run_suite
 
     cfg = _load_config(config)
     systems_list = [s.strip() for s in systems.split(",") if s.strip()]

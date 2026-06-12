@@ -108,7 +108,7 @@ async def test_run_suite_aggregates_per_system(tmp_path, monkeypatch):
         return 3
 
     monkeypatch.setattr("oragraphrag.bench.runner._run_one", fake_run_one)
-    monkeypatch.setattr("oragraphrag.bench.runner._judge_call", fake_judge_call)
+    monkeypatch.setattr("oragraphrag.bench.runner.judge_call", fake_judge_call)
 
     out = await run_suite(cfg, suite=str(suite_path), systems=["oragraphrag"], limit=None)
     assert "systems" in out
@@ -139,7 +139,7 @@ async def test_run_suite_respects_limit(tmp_path, monkeypatch):
         return 2
 
     monkeypatch.setattr("oragraphrag.bench.runner._run_one", fake_run_one)
-    monkeypatch.setattr("oragraphrag.bench.runner._judge_call", fake_judge_call)
+    monkeypatch.setattr("oragraphrag.bench.runner.judge_call", fake_judge_call)
     out = await run_suite(cfg=Config(), suite=str(suite_path), systems=["naive_rag"], limit=2)
     assert out["systems"]["naive_rag"]["n"] == 2
 
@@ -164,7 +164,7 @@ async def test_run_suite_records_median_correctness(tmp_path, monkeypatch):
         return next(scores)
 
     monkeypatch.setattr("oragraphrag.bench.runner._run_one", fake_run_one)
-    monkeypatch.setattr("oragraphrag.bench.runner._judge_call", fake_judge_call)
+    monkeypatch.setattr("oragraphrag.bench.runner.judge_call", fake_judge_call)
     out = await run_suite(cfg=Config(), suite=str(suite_path), systems=["naive_rag"], limit=None)
     assert out["systems"]["naive_rag"]["median_correctness"] == 3
 
