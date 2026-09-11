@@ -52,7 +52,7 @@ def _resolve_source(source: str | None) -> str | None:
 @app.command("init-db")
 def init_db_cmd(
     config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
-    rebuild: bool = typer.Option(False, "--rebuild", help="Drop and recreate schema."),  # noqa: B008
+    rebuild: bool = typer.Option(False, "--rebuild", help="Drop and recreate schema."),
 ) -> None:
     """Create tables, HNSW indexes, the property graph, and ontology axis rows."""
     from oragraphrag.embed import Embedder, build_axis_vectors
@@ -86,7 +86,7 @@ def init_db_cmd(
 def graphify_cmd(
     folder: Path = typer.Argument(..., exists=True, file_okay=False, help="Folder to ingest."),  # noqa: B008
     config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
-    reextract: bool = typer.Option(  # noqa: B008
+    reextract: bool = typer.Option(
         False, "--reextract", help="Clear the ledger before ingesting."
     ),
 ) -> None:
@@ -124,7 +124,7 @@ def graphify_cmd(
         # mismatch) must not block the ingest itself.
         try:
             MemoryLayer(cfg, store).register_source(source_id, str(folder))
-        except Exception as mem_err:  # noqa: BLE001
+        except Exception as mem_err:
             console.print(
                 f"[yellow]MemoryLayer.register_source failed; continuing without "
                 f"metadata index: {mem_err}[/yellow]"
@@ -151,14 +151,14 @@ def graphify_cmd(
 
 @app.command("query")
 def query_cmd(
-    question: str = typer.Argument(..., help="The question to answer."),  # noqa: B008
+    question: str = typer.Argument(..., help="The question to answer."),
     config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
-    dry_run: bool = typer.Option(  # noqa: B008
+    dry_run: bool = typer.Option(
         False,
         "--dry-run",
         help="Print what would be queried without touching the DB or LLM.",
     ),
-    source: str | None = typer.Option(  # noqa: B008
+    source: str | None = typer.Option(
         None,
         "--source",
         help=(
@@ -236,13 +236,13 @@ def sources_cmd(
 @app.command("export")
 def export_cmd(
     out: Path = typer.Option(..., "--out", help="Output JSONL path."),  # noqa: B008
-    format: str = typer.Option(  # noqa: A002,B008
+    format: str = typer.Option(
         "finetune",
         "--format",
         help="Output format. Currently only 'finetune' is supported.",
     ),
     config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
-    source: str | None = typer.Option(  # noqa: B008
+    source: str | None = typer.Option(
         None,
         "--source",
         help=(
@@ -273,11 +273,11 @@ def export_cmd(
 
 @app.command("bench")
 def bench_cmd(
-    suite: str = typer.Option(..., "--suite", help="Path to the bench suite JSONL."),  # noqa: B008
-    systems: str = typer.Option(  # noqa: B008
+    suite: str = typer.Option(..., "--suite", help="Path to the bench suite JSONL."),
+    systems: str = typer.Option(
         "oragraphrag", "--systems", help="Comma-separated baseline names."
     ),
-    limit: int | None = typer.Option(  # noqa: B008
+    limit: int | None = typer.Option(
         None, "--limit", help="Cap the number of questions for smoke runs."
     ),
     config: Path = typer.Option(None, "--config", "-c", help="Path to config.yaml."),  # noqa: B008
