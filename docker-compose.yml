@@ -3,7 +3,7 @@ services:
     image: container-registry.oracle.com/database/free:latest-lite
     container_name: oragraphrag-oracle
     ports:
-      - "${ORACLE_PORT:-1521}:1521"
+      - "127.0.0.1:${ORACLE_PORT:-1521}:1521"
     environment:
       - ORACLE_PWD=${ORACLE_PASSWORD:-Welcome12345*}
       - ORACLE_CHARACTERSET=AL32UTF8
@@ -20,7 +20,7 @@ services:
     image: ollama/ollama:latest
     container_name: oragraphrag-ollama
     ports:
-      - "${OLLAMA_PORT:-11434}:11434"
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
     volumes:
       - oragraphrag-ollama-data:/root/.ollama
     restart: unless-stopped
