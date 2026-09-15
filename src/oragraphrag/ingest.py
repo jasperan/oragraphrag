@@ -78,7 +78,9 @@ def walk_folder(root: Path | str) -> Iterator[Span]:
     """
     root_path = Path(root)
     for p in sorted(root_path.rglob("*")):
-        if not p.is_file() or p.suffix.lower() not in _SUPPORTED_EXTS:
+        # Skip symlinks: is_file() follows them, so a link named "x.md" pointing at any
+        # readable file would otherwise be read and sent to the extraction LLM.
+        if p.is_symlink() or not p.is_file() or p.suffix.lower() not in _SUPPORTED_EXTS:
             continue
         rel = p.relative_to(root_path).as_posix()
         suffix = p.suffix.lower()
