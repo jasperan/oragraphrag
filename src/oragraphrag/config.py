@@ -7,7 +7,7 @@ from typing import Literal
 
 import yaml
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 
 class OciGrokConfig(BaseModel):
@@ -96,6 +96,19 @@ class Config(BaseSettings):
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
     answer: AnswerConfig = Field(default_factory=AnswerConfig)
     ingest: IngestConfig = Field(default_factory=IngestConfig)
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        # Environment outranks init kwargs (which carry config.yaml), so a config file
+        # found in the working directory can never override what the operator exported.
+        return (env_settings, init_settings, dotenv_settings, file_secret_settings)
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> Config:

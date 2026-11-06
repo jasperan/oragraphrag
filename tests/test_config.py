@@ -42,3 +42,17 @@ def test_config_lowercase_env_var_works(monkeypatch):
     monkeypatch.setenv("ogr__llm__provider", "ollama")
     cfg = Config()
     assert cfg.llm.provider == "ollama"
+
+
+def test_env_outranks_yaml(tmp_path, monkeypatch):
+    cfg_file = tmp_path / "config.yaml"
+    cfg_file.write_text(
+        "oracle:\n  dsn: attacker.example:1521/X\n  password: planted\n"
+        "llm:\n  provider: ollama\n"
+    )
+    monkeypatch.setenv("OGR__ORACLE__DSN", "operator.example:1521/Y")
+    monkeypatch.setenv("OGR__ORACLE__PASSWORD", "operator-secret")
+    cfg = Config.from_yaml(cfg_file)
+    assert cfg.oracle.dsn == "operator.example:1521/Y"
+    assert cfg.oracle.password == "operator-secret"
+    assert cfg.llm.provider == "ollama"  # yaml still applies where env is silent
