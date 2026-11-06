@@ -8,6 +8,9 @@ each buffer's text to the LLM extractor. Span boundaries respect document sectio
 from __future__ import annotations
 
 import hashlib
+import io
+import os
+import stat
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -84,19 +87,48 @@ def walk_folder(root: Path | str) -> Iterator[Span]:
             continue
         rel = p.relative_to(root_path).as_posix()
         suffix = p.suffix.lower()
+        try:
+            data = _read_regular_file(root_path, rel)
+        except OSError:
+            # Raced into a symlink / non-regular file, or vanished: skip it.
+            continue
         if suffix in {".md", ".markdown"}:
-            yield from _parse_markdown(p, rel)
+            yield from _parse_markdown(data.decode(errors="replace"), rel)
         elif suffix == ".txt":
-            text = p.read_text(errors="replace").strip()
+            text = data.decode(errors="replace").strip()
             if text:
                 yield Span(doc_id=rel, section_path="", text=text)
         elif suffix == ".pdf":
-            yield from _parse_pdf(p, rel)
+            yield from _parse_pdf(data, rel)
 
 
-def _parse_markdown(path: Path, rel: str) -> Iterator[Span]:
+def _read_regular_file(root: Path, rel: str) -> bytes:
+    """Read `rel` under `root` without following any symlink on the way.
+
+    The is_symlink() check in walk_folder is only advisory: the entry can be swapped
+    for a symlink before it is opened. Opening each component with O_NOFOLLOW relative
+    to the parent directory fd makes the open itself the check.
+    """
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+    parts = rel.split("/")
+    fd = os.open(root, flags | getattr(os, "O_DIRECTORY", 0))
+    try:
+        for part in parts[:-1]:
+            nxt = os.open(part, flags | getattr(os, "O_DIRECTORY", 0), dir_fd=fd)
+            os.close(fd)
+            fd = nxt
+        nxt = os.open(parts[-1], flags | getattr(os, "O_NONBLOCK", 0), dir_fd=fd)
+    finally:
+        os.close(fd)
+    with os.fdopen(nxt, "rb") as f:
+        if not stat.S_ISREG(os.fstat(f.fileno()).st_mode):
+            raise OSError(f"not a regular file: {rel}")
+        return f.read()
+
+
+def _parse_markdown(text: str, rel: str) -> Iterator[Span]:
     md = MarkdownIt()
-    tokens = md.parse(path.read_text(errors="replace"))
+    tokens = md.parse(text)
     section_stack: list[str] = []
     buf: list[str] = []
 
@@ -133,8 +165,8 @@ def _parse_markdown(path: Path, rel: str) -> Iterator[Span]:
         yield span
 
 
-def _parse_pdf(path: Path, rel: str) -> Iterator[Span]:
-    reader = PdfReader(str(path))
+def _parse_pdf(data: bytes, rel: str) -> Iterator[Span]:
+    reader = PdfReader(io.BytesIO(data))
     for n, page in enumerate(reader.pages):
         text = (page.extract_text() or "").strip()
         if text:

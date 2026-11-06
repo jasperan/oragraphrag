@@ -138,3 +138,32 @@ def test_buffer_approx_tokens_zero_on_empty_text():
     assert b.approx_tokens == 0
     b2 = Buffer(doc_id="d", section_path="s", text="hello", span_hashes=[])
     assert b2.approx_tokens >= 1
+
+
+def test_walk_folder_ignores_symlinked_file_and_dir(tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "secret.txt").write_text("TOPSECRET")
+    root = tmp_path / "corpus"
+    root.mkdir()
+    (root / "ok.txt").write_text("fine")
+    (root / "leak.txt").symlink_to(outside / "secret.txt")
+    (root / "linkdir").symlink_to(outside, target_is_directory=True)
+    texts = [s.text for s in walk_folder(root)]
+    assert texts == ["fine"]
+
+
+def test_read_regular_file_refuses_swapped_symlink(tmp_path):
+    import pytest
+
+    from oragraphrag.ingest import _read_regular_file
+
+    outside = tmp_path / "secret.txt"
+    outside.write_text("TOPSECRET")
+    root = tmp_path / "corpus"
+    (root / "sub").mkdir(parents=True)
+    (root / "sub" / "a.txt").symlink_to(outside)
+    with pytest.raises(OSError):
+        _read_regular_file(root, "sub/a.txt")
+    (root / "sub" / "b.txt").write_text("ok")
+    assert _read_regular_file(root, "sub/b.txt") == b"ok"
